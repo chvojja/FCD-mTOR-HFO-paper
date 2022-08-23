@@ -7,7 +7,7 @@
 c = MEcohort(Name = 'FCD_MTORvsGFP_Naty_5el_2020_2022',Verbose=true);
 
 root_treat = 'D:\tempPremek'; %% Beware! I have to put here only mice with no bilateral lesion!!!!!!
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'PremekMysExtractedJoinedChanCorrect', Treatment = 'MUT'); % , Number = 339
+c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'PremekMysExtractedJoinedChanCorrect', Treatment = 'MUT',Number = 339); % , 
 c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty419ExtractedJoined', Treatment = 'MUT');
 % c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'TryskoMysExtractedJoined', Treatment = 'MUT');  % Bilateral lesion, put out
 c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'TykravoMysExtractedJoined', Treatment = 'MUT', Number = 343);
