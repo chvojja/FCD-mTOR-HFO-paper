@@ -1,8 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%
-%clear all
+% 
+% %% Root analysis dir
+% %clear all
+% roota='D:\temp_FCD_analyza_1';
 
-
-%% create cohort and gather info about subjects
+%% Create cohort and gather info about subjects
 
 c = MEcohort(Name = 'FCD_MTORvsGFP_Naty_5el_2020_2022',Verbose=true);
 
@@ -22,17 +24,33 @@ c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty600ExtractedJoined'
 c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty601ExtractedJoined', Treatment = 'GFP');
 c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty602ExtractedJoined', Treatment = 'GFP');
 
-%% We added all the data
+% We added all the data
 
 c.assignRoleBy(Treatment = {'MUT'}, Role = 'TREAT');
 c.assignRoleBy(Treatment = {'GFP'}, Role = 'CTRL');
 
 c.printvar(c.Tsub)
 
-%c.summary(); % prints informations about cohort, its a table or plot..
+%%
+save(flp('cohort.mat'),'c')
+
+% %% Load parts of analysis
+% c = load2(flp('cohort.mat'));
+% 
+% B = rowfun(@testrow,c.Tsub);
+% 
+% function testRow(varargin)
+% disp('sdsd')
+% 
+% 
+% end
+
+%%
+% eeg_subset_5perc_L = o.VKJeeg.
+
+%%
 
 
-% %%
 % clear o
 % o.subjRootPathsCell{1} = 'D:\tempPremek';
 % % bez bilateralu
