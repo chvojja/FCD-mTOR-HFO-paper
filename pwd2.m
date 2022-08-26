@@ -1,4 +1,4 @@
-function y  = flp(x)
+function y  = pwd2(x)
 %FP create full path 
 roota = 'D:\temp_FCD_analyza_1';
 y = fullfile(roota,x);
