@@ -18,13 +18,13 @@ IEDs = rowfun(@(x1,x2,x3,x4,y) detectIEDs_row(x1,x2,x3,x4,labelFolder) ,Tsubset,
         %%%%%%%%%%%%%%%create label
 
 %% Functions
-function y = detectIEDs_row(ID,FilePath,RootDir,Folder,labelFolder) 
+function y = detectIEDs_row(ID,FilePath,RootDir,Folder,labelFolder)
 
     label = VKJ_jancaSpikeDetector_eegFile2lblStruct(FilePath = FilePath, Name = 'IED1' , Color ='0 0 1', Settings = []);
     % Save a label file
-    filePathForLabelFile = [char(RootDir) filesep char(Folder) filesep labelFolder filesep VKJ_eegFileName2lblFileName(  filePath2fileName(  char(FilePath)   )     ) ];
-    filePathForLabelFile = fullfile ( a.pwd('lbl1') )
-    VKJ_updateLabelFile(FilePath = filePathForLabelFile, LabelStruct = label);
+    pathForLabelFile = [char(RootDir) filesep char(Folder) filesep labelFolder filesep VKJ_eegFileName2lblFileName(  filePath2fileName(  char(FilePath)   )     ) ];
+    
+    VKJ_updateLabelFile(FilePath = pathForLabelFile, LabelStruct = label);
 
     % Put a copy of eeg to temp
     copyfile(char(FilePath),   changePath(Old=FilePath, New =a.pwd('eeg1'))    );
