@@ -1,0 +1,101 @@
+
+
+% Tsubset = outerjoin(Tsubset,c.VKJeeg,'LeftKeys',{'VKJeeg_ID'},'RightKeys',{'ID'},'Type','Left','RightVariables', {'Tdat_ID','FileName','FilePath'});
+% Tsubset = outerjoin(Tsubset,c.Tdat,'LeftKeys',{'Tdat_ID'},'RightKeys',{'ID'},'Type','Left','RightVariables', {'RootDir','Folder'})
+% %save(a.ptmp,'Tsubset','-append');
+
+unpack_var = 'c'; unpack; clear c
+
+%% Load IED detections and extract IEDs, FR, and R 
+
+Tied = tableNewEmpty('ID','uint32',...
+                   'Subject','cat',...
+                   'VKJlbl_ID','double',... % link to label file 
+                   'LabelName','cat',... % IEDstrict, IEDeasy FR, R....
+                   'ChName','cat',...
+                   'Position','cat',... % inside outside lesion
+                   'Signal','cell',... % raw signal predefined duration, centered
+                   'Fs','double',...
+                   'IEDampl','double',...
+                   'IEDwidth','double',...
+                   'IEDskew','double',...
+                   'hasFR','double',... % has or has not
+                   'hasR','double',...
+                   'indsR','double',...
+                   'indsFR','double',...
+                   'freqR','double',...
+                   'freqFR','double',...
+                   'powerR','double',...
+                   'powerFR','double',...
+                   'StartDn','double',Nrows = 1); 
+%                    'SignalR','cell',... % raw signal predefined duration, centered
+%                    'SignalFR','cell',... % raw signal predefined duration, centered
+%                  'SignalHP','cell',... %  filtered signal predefined duration, centered
+
+
+TlblFiles = leftjoinsorted(VKJlbl,VKJeeg,'LeftKeys',{'VKJeeg_ID'},'RightKeys',{'ID'});
+
+rowfunt(Table=TlblFiles, Fun = @computeFeatures_row);
+
+Table = TlblFiles;
+[r,c] = size(Table);
+for i =1:r
+
+     TiedOneFile = VKJ_lblFile2table(  FilePath = char(TlblFiles.FilePath_left(i)   )  %, eegFilePath = char(TlblFiles.FilePath_right));
+     % now extract signal from corresponding eeg file
+     % this mus be custom since we will be aligning....blabla
+
+     eeg = load(char(TlblFiles.FilePath_right));
+     % add these new detections to the previous
+     Tied = tableAppend(Source = TiedOneFile, Target = Tied);
+end
+
+%  o.VKJeeg = tableAppend(Source = TfilesOneSub(oneSub_eegL, :), Target = o.VKJeeg);
+
+
+
+% detectorSettings =  a.jancaSpikeSettings.IED_strict5000Hz;
+% rowfun(@(x1,x2,x3,x4,y1,y2) computeFeatures_row(x1,x2,x3,x4,a.labelFolder,detectorSettings) ,Tsubset,'InputVariables',{'ID','VKJeeg_ID','FilePath','RootDir'},'NumOutputs', 0);
+% 
+
+
+
+% %% Functions
+function computeFeatures_row(Tlbl) 
+         lbl = load(char(Tlbl.FilePath_left));
+         eeg = load(char(Tlbl.FilePath_right));
+         s;
+
+         
+
+
+
+end
+% function computeFeatures_row(ID_lbl,FilePath,RootDir,labelFolder,detectorSettings) 
+% 
+%     label = VKJ_jancaSpikeDetector_eegFile2lblStruct(FilePath = FilePath, Name = detectorSettings.VKJlabelsName , Color =detectorSettings.VKJlabelsColor, Settings = detectorSettings.settingsStr);
+%     % Save a label file
+%     %filePathForLabelFile = [char(RootDir) filesep char(Folder) filesep labelFolder filesep VKJ_eegFileName2lblFileName(  filePath2fileName(  char(FilePath)   )     ) ];
+%     filePathForLabelFile = fullfile ( a.pwd('lbl2')  ,   VKJ_eegFileName2lblFileName(  filePath2fileName(  char(FilePath)   )     )       );
+%     VKJ_updateLabelFile(FilePath = filePathForLabelFile, LabelStruct = label);
+% 
+%     % Put a copy of eeg to temp for examination
+%     %copyfile(char(FilePath),   changePath(Old=FilePath, New =a.pwd('eeg1'))    );
+%     %copyfile(char(pathForLabelFile),changePath(Old=pathForLabelFile, New =pwd2));
+%    
+% end
+% 
+% 
+% function y  = subsetOfFiles_rowGroup(IDs)
+% 
+% Nids = numel(IDs);
+% percHowMuch = 2;
+% NhowMuch = ceil(Nids*percHowMuch/100);
+% NhowMuch = 2;
+% 
+% selIdx = randperm(Nids,NhowMuch);
+% npercentIDs = IDs(selIdx);
+% 
+% y = npercentIDs;
+% 
+% end

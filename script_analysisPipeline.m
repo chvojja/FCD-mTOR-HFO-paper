@@ -3,39 +3,20 @@
 % %% Root analysis dir
 % %clear all
 % roota='D:\temp_FCD_analyza_1';
+% 
+% %% Load parts of analysis
+% c = load2(a.pwd('c.mat'));
 
 %% Create cohort and gather info about subjects
+script_analysis_0_cohort;
+script_analysis_1_IEDdetectionAndCheck;
+script_analysis_0_cohort;
+script_analysis_2_IEDreadOut_plots;
 
-c = MEcohort(Name = 'FCD_MTORvsGFP_Naty_5el_2020_2022',Verbose=true);
-
-root_treat = 'D:\tempPremek'; %% Beware! I have to put here only mice with no bilateral lesion!!!!!!
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'PremekMysExtractedJoinedChanCorrect', Treatment = 'MUT',Number = 339); % , 
-
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty419ExtractedJoined', Treatment = 'MUT');
 
 %%
-% c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'TryskoMysExtractedJoined', Treatment = 'MUT');  % Bilateral lesion, put out
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'TykravoMysExtractedJoined', Treatment = 'MUT', Number = 343);
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty413ExtractedJoined', Treatment = 'MUT');
-% c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty338ExtractedJoined', Treatment = 'MUT');  Bilateral lesion, put out
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty341ExtractedJoined', Treatment = 'MUT');
-c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'Naty388ExtractedJoined', Treatment = 'MUT');
-
-root_ctrl = 'D:\tempHFO_Naty_GFPcontrols'; % cesta
-c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty554ExtractedJoined', Treatment = 'GFP');
-c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty600ExtractedJoined', Treatment = 'GFP');
-c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty601ExtractedJoined', Treatment = 'GFP');
-c.addData(Format = 'VKJ', RootDir = root_ctrl, Folder = 'Naty602ExtractedJoined', Treatment = 'GFP');
-
-% We added all the data
-
-c.assignRoleBy(Treatment = {'MUT'}, Role = 'TREAT');
-c.assignRoleBy(Treatment = {'GFP'}, Role = 'CTRL');
-
-c.printvar(c.Tsub)
-
-%%
-save(pwd2('cohort.mat'),'c')
+% save(a.pwd('cohort.mat'),'c')
+save(a.ptmp,'c','-append');
 
 % %% Load parts of analysis
 % c = load2(pwd2('cohort.mat'));
