@@ -8,15 +8,15 @@
 % c = load2(a.pwd('c.mat'));
 
 %% Create cohort and gather info about subjects
-script_analysis_0_cohort;
+%script_analysis_0_cohort;
 script_analysis_1_IEDdetectionAndCheck;
 script_analysis_0_cohort;
-script_analysis_2_IEDreadOut_plots;
+%script_analysis_2_IEDreadOut_plots;
 
 
 %%
 % save(a.pwd('cohort.mat'),'c')
-save(a.ptmp,'c','-append');
+
 
 % %% Load parts of analysis
 % c = load2(pwd2('cohort.mat'));

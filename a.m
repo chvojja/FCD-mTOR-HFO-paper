@@ -4,6 +4,7 @@ classdef a < Analyzer & JancaSpike
     properties (Constant)  % Custom constants
         root = 'D:\temp_FCD_analyza_1';
         labelFolder = 'IEDFRRfinal1'; 
+        verboser = Verboser();
         
         
     end
