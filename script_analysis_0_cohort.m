@@ -30,4 +30,5 @@ c.consolidate()
 c.printvar(c.Tsub)
 
 %%
-save7fp = 'D:\temp_FCD_analyza_1\c.mat'; save7
+%save7fp = 'D:\temp_FCD_analyza_1\c.mat'; save7
+save7fp = a.pwd('c.mat'); save7
