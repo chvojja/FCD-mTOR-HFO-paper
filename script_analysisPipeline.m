@@ -8,14 +8,14 @@ clear all
 % c = load2(a.pwd('c.mat'));
 
 %% Create cohort and gather info about subjects
-%script_analysis_0_cohort;
+script_analysis_0_cohort;
 % in order to not fetch for subjects again and again
 load(a.pwd('c.mat'));
 unpack_var = 'c'; unpack; clear c FileFilter N_Trows verboser_messages
 % select a small subset
 %script_analysis_MakeSubset; 
 
-script_analysis_ApplySubset;  % Uncomment if subset not necessary
+%script_analysis_ApplySubset;  % Uncomment if subset not necessary
 
 script_analysis_1_IEDdetectionAndCheck;
 
@@ -24,13 +24,18 @@ script_analysis_0_cohort;
 
 load(a.pwd('c.mat'));
 unpack_var = 'c'; unpack; clear FileFilter N_Trows verboser_messages
+load(a.pwd('VKJeeg.mat'));
 
-script_analysis_ApplySubset;  % Uncomment if subset not necessary
+%script_analysis_ApplySubset;  % Uncomment if subset not necessary
 
-
+%%
 script_analysis_2_IEDreadOut;
+script_analysis_3_HFOs;
 
-% script_analysis_HFOs
+
+%%
+script_analysis_4_ComputeResults;
+script_analysis_5_plots;
 
 
 %%

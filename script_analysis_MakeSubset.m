@@ -15,7 +15,8 @@ save7fp = a.pwd('VKJeegSubsetIDs.mat'); save7
 % %% Testing IEDs
 % detectorSettings =  a.jancaSpikeSettings.IED_strict5000Hz;
 % rowfun(@(x1,x2,x3,x4,y,y2) detectIEDs_row(x1,x2,x3,x4,a.labelFolder,detectorSettings) ,c.VKJeeg2,'InputVariables',{'VKJeeg_ID','FilePath','RootDir','Folder'},'NumOutputs', 0);
-% 
+
+
 
 
 function y  = subsetOfFiles_rowGroup(IDs)

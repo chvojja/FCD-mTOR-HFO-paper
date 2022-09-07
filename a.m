@@ -1,4 +1,4 @@
-classdef a < Analyzer & JancaSpike
+classdef a < Analyzer & JancaSpike %& Verboser
     %A Constants and Static methods for current analysis
     
     properties (Constant)  % Custom constants
