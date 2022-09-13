@@ -1,7 +1,14 @@
 
 % Tsubset = outerjoin(Tsubset,c.VKJeeg,'LeftKeys',{'VKJeeg_ID'},'RightKeys',{'ID'},'Type','Left','RightVariables', {'Tdat_ID','FileName','FilePath'});
 % Tsubset = outerjoin(Tsubset,c.Tdat,'LeftKeys',{'Tdat_ID'},'RightKeys',{'ID'},'Type','Left','RightVariables', {'RootDir','Folder'})
+Fp = 20;
+Fst = 60;
+Ap = 1;
+Ast = 30;
 
+dbutter = designfilt('lowpassiir','PassbandFrequency',Fp,...
+  'StopbandFrequency',Fst,'PassbandRipple',Ap,...
+  'StopbandAttenuation',Ast,'SampleRate',fs,'DesignMethod','butter');
 % Load what we have so far
 Nsignal = 5000;
 
@@ -17,7 +24,7 @@ for ir = 1:rows
       sf = downify(s);
       sf = downify(sf);
 
-      sf = filtfilt(dbutter,sf);
+      %sf = filtfilt(dbutter,sf);
 
      %[sfc,Nsignal] = cropfillmean("Signal",sf,"CropPercent",50);
      wb = blackman(Nsignal)';

@@ -7,5 +7,6 @@ N=numel(y);
 offsets = 0.1*rand(size(y));
 
 hb1 = scatter(varargin{1}+offsets,varargin{2:end}); 
+
 end
 

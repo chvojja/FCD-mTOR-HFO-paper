@@ -1,6 +1,6 @@
 %% Create cohort and gather info about subjects
 
-c = MEcohort(Name = 'FCD_MTORvsGFP_Naty_5el_2020_2022',Verbose=true,FileFilter = @a.filefilter); %{'SubFold1','5000HZ','SubFold1',a.labelFolder});
+c = MEcohort(Name = 'FCD_MTORvsGFP_Naty_5el_2020_2022',Verbose=true,FileFilter = @filefilter); %{'SubFold1','5000HZ','SubFold1',a.labelFolder});
 
 root_treat = 'D:\tempPremek'; %% Beware! I have to put here only mice with no bilateral lesion!!!!!!
 c.addData(Format = 'VKJ', RootDir = root_treat, Folder = 'PremekMysExtractedJoinedChanCorrect', Treatment = 'MUT',Number = 339); % , 
@@ -38,3 +38,14 @@ save7fp = a.pwd('c.mat'); save7
 
 
 
+function T = filefilter(TfilesOneSub)
+
+%load(a.pwd('VKJeegSubsetIDs.mat'));
+
+% Keep only first 2 files and all label files
+Teeg = TfilesOneSub( TfilesOneSub.Type =='eeg' & TfilesOneSub.SubFold1 == '5000HZ' , :); 
+Tlbl = TfilesOneSub( TfilesOneSub.Type =='lbl' & TfilesOneSub.SubFold1 == a.labelFolder, : ); 
+%T = [Teeg( 1:2 ,:); Tlbl];
+T = [Teeg; Tlbl];
+
+end

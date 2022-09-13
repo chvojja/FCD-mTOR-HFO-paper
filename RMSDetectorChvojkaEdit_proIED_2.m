@@ -1,5 +1,5 @@
 % Jan Chvojka Edited
-function det_struct=RMSDetectorChvojkaEdit_proIED_2(s,sW,fs,bcoef,fmax,rmsLen,join_gap,minAcceptLen,n_std_rms,widen,minPeaks,b_disp)
+function det_struct=RMSDetectorChvojkaEdit_proIED_2(s,sW,fs,filteringfun,fmax,rmsLen,join_gap,minAcceptLen,n_std_rms,widen,minPeaks,b_disp)
 % s ... input signal
 % fs ... sampling
 % b ... FIR coefficients
@@ -14,7 +14,9 @@ s=s(:); % make sure s is column
 % b  = firpm(N, Fo, Ao, W, {dens});
 
 %freqz(b,1)
-fd=filtfilt(bcoef,1,s);
+%fd=filtfilt(bcoef,1,s);
+
+fd = filteringfun(s);
 det_struct=[];
 figdata=[];
 
@@ -52,8 +54,13 @@ minAcceptLen=round(minAcceptLen*10^-3*fs); % min len in indexes
 
 hfo_cand(1)=0;
 hfo_cand(end)=0;
-hfo_open=imopen(hfo_cand,strel('line',minAcceptLen,90)); % remove shorter than minAcceptLen
+% hfo_open=imopen(hfo_cand,strel('line',minAcceptLen,90)); % remove shorter than minAcceptLen
+% hfo_close=imclose(hfo_open,strel('line',join_gap,90)); % join closer than join_gap
+
+
+hfo_open=imopen(hfo_cand,strel('line',round(fs/fmax),90)); % remove shorter than 1 period of fmax
 hfo_close=imclose(hfo_open,strel('line',join_gap,90)); % join closer than join_gap
+hfo_close=imopen(hfo_close,strel('line',minAcceptLen,90)); % remove shorter than minAcceptLen
 
 % hold on;
 % plot(fd);
@@ -116,7 +123,7 @@ for i=1:len_OOI
     [fp,fi,~,p]=findpeaks(xcorr(x,x),fs,'SortStr','descend','MinPeakDistance',distanceSec); %,'MinPeakWidth',widthSec);
     if numel(fp)>=minPeaks
        prominanceSecondVsFirst=p(1)/p(2);
-       if prominanceSecondVsFirst<5
+       if prominanceSecondVsFirst<4
            hfo_freqs(i)=1/mean(diff(sort(fi(1:3))));
 %            if  hfo_freqs(i)>50 && hfo_freqs(i)<120
 %                disp('')
@@ -133,9 +140,10 @@ for i=1:len_OOI
   
 
 
- if b_disp && selectedIDx(i) % Zobrazeni na požádání
-    
-subplot(2,1,1);
+ if b_disp %%&& selectedIDx(i) % Zobrazeni na požádání
+figurefull;
+
+subplot(3,1,1);
 hold on;
 plot(0.4*hfo_close,'g');
 plot(0.2*hfo_cand,'k');
@@ -146,10 +154,16 @@ dd=zeros(size(vector_threshold,1),1);
 dd(start:stop)=0.4;
 %plot(dd,'y')
 
-subplot(2,1,2);
+subplot(3,1,2);
 plot(s);
+
+subplot(3,1,3)
+%plotstockwell(s,fs,1.8,[300 800],10,'linear')
+
+title(num2str( selectedIDx(i) ) )
 pause
     
+close(gcf)
 %     hf=figure;
 %     subplot(2,1,1)
 %     hold on;

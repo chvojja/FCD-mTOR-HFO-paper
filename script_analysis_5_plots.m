@@ -52,7 +52,7 @@ FRpeaksCount_TREAT = sum(x);
 ied_avg = ied_avg_CTRL -0.2;
 peakcounts = RpeaksCount_CTRL;
 
-ied_avg = ied_avg_TREAT -0.2; % Comment if you need CTRL
+ied_avg = ied_avgR_TREAT -0.2; % Comment if you need CTRL
 peakcounts = RpeaksCount_TREAT;
 
 NbinsOnseSide = 20;
@@ -67,19 +67,26 @@ groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
 counts = splitapply(@sum,peakCountsCropped,groups_bins);
 
 figure;
-plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color','k'); hold on;
+h1 = plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color','k'); hold on;
 Nb=eI-sI+1;
 bar(linspace(1,Nb,NbinsOnseSide*2)  ,    counts/sum(counts)  ,'k')  %max(ied_avg)
+
+ied_avg = ied_avg_CTRL -0.2;
+h2 = plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color',[0.8 0.8 0.8]); hold on;
+
+legend([h1 h2], {'FCD','CTRL'})
 hold off;
+
+title('Distribution of R oscillation peaks (FCD) with respect to average IED (FCD, CTRL)');
 
 
 %% FR  plot histogram of oscillations
 
 ied_avg = ied_avg_CTRL -0.2;
 peakcounts = FRpeaksCount_CTRL;
-% 
-% ied_avg = ied_avg_TREAT -0.2;      % Comment if you need CTRL
-% peakcounts = FRpeaksCount_TREAT;
+
+ied_avg = ied_avgFR_TREAT -0.2;      % Comment if you need CTRL
+peakcounts = FRpeaksCount_TREAT;
 % 
 % ied_avg = ied_avgFR_TREAT -0.2;
 
@@ -95,11 +102,17 @@ groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
 counts = splitapply(@sum,peakCountsCropped,groups_bins);
 
 figure;
-plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color','k'); hold on;
+h1 = plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color','k'); hold on;
 Nb=eI-sI+1;
 bar(linspace(1,Nb,NbinsOnseSide*2)  ,    counts/sum(counts)  ,'k')  %max(ied_avg)
+
+ied_avg = ied_avg_CTRL -0.2;
+h2 = plot(ied_avg(sI:eI), 'LineWidth',1.5,'Color',[0.8 0.8 0.8]); hold on;
+
+legend([h1 h2], {'FCD','CTRL'})
 hold off;
 
+title('Distribution of FR oscillation peaks (FCD) with respect to average IED (FCD, CTRL)');
 
 %%
 % 
