@@ -160,7 +160,7 @@ plot(s);
 subplot(3,1,3)
 %plotstockwell(s,fs,1.8,[300 800],10,'linear')
 
-title(num2str( selectedIDx(i) ) )
+title( [  num2str( selectedIDx(i) )  '   freq '  num2str(hfo_freqs(i)) ])
 pause
     
 close(gcf)

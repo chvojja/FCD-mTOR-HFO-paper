@@ -11,10 +11,14 @@ VKJeeg = outerjoin(VKJeeg,Tdat,'LeftKeys',{'Tdat_ID'},'RightKeys',{'ID'},'Type',
 % toc
 
 %% Detect IEDs
-tic
-names =            { a.jancaSpikeSettings.strict5000Hz.VKJlabelsName    a.jancaSpikeSettings.default.VKJlabelsName  };
-colors =           { a.jancaSpikeSettings.strict5000Hz.VKJlabelsColor   a.jancaSpikeSettings.default.VKJlabelsColor };
-jancaStrings =     { a.jancaSpikeSettings.strict5000Hz.settingsStr      a.jancaSpikeSettings.default.settingsStr };
+
+% names =            { a.jancaSpikeSettings.strict5000Hz.VKJlabelsName    a.jancaSpikeSettings.default.VKJlabelsName  };
+% colors =           { a.jancaSpikeSettings.strict5000Hz.VKJlabelsColor   a.jancaSpikeSettings.default.VKJlabelsColor };
+% jancaStrings =     { a.jancaSpikeSettings.strict5000Hz.settingsStr      a.jancaSpikeSettings.default.settingsStr };
+
+names =            {    a.jancaSpikeSettings.default.VKJlabelsName  };
+colors =           {    a.jancaSpikeSettings.default.VKJlabelsColor };
+jancaStrings =     {    a.jancaSpikeSettings.default.settingsStr };
 
 rows = size(VKJeeg,1);
 for i = 1:rows
@@ -47,7 +51,7 @@ end
 
 %save7fp = a.pwd('VKJeeg.mat'); save7
 
-toc
+
 
 
 % %% Support functions

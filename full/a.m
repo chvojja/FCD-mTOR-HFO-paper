@@ -1,12 +1,15 @@
-classdef a < Analyzer & JancaSpike %& Verboser
+classdef a < Analyzer %& JancaSpike %& Verboser
     %A Constants and Static methods for current analysis
     
     properties (Constant)  % Custom constants
         root = 'D:\temp_FCD_analyza_1Full';
         labelFolder = 'IEDFRRfinal1'; 
         verboser = Verboser();
-        
-        
+           
+        names =            { JancaSpike.strict5000Hz.VKJlabelsName    JancaSpike.default.VKJlabelsName  };
+        colors =           { JancaSpike.strict5000Hz.VKJlabelsColor   JancaSpike.default.VKJlabelsColor };
+        jancaStrings =     { JancaSpike.strict5000Hz.settingsStr      JancaSpike.default.settingsStr };
+
     end
 
 

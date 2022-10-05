@@ -33,7 +33,7 @@ fs = 5000;
 
 %% Create cohort and gather info about subjects
 
-%addpath('testing');
+addpath('testing');
 %addpath('full');
 %%
 script_analysis_0_cohort;

@@ -22,6 +22,8 @@ color.TREAT = [1 0 0];
 % 
 % selectL = controlsL;
 % x = double( cell2mat( Tiedf.Signal( selectL  )  ) );
+% x = readvar( Folder = a.pwd(['Tied' filesep 'Signal']), Tiedf.ID( selectL  );
+% x = readvar( Files = Tiedf.SignalFile( selectL ) , ReadFun = @(x)loadbin(x, [1,5000] , 'double' ), 1 );
 % ied_avg_CTRL =  mean( x - mean(x,2) , 1 ) ;
 % 
 % x = double( cell2mat( Tiedf.RpeaksInd( selectL & Tiedf.HasR )  ) );

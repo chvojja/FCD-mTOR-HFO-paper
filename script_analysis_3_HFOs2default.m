@@ -2,10 +2,11 @@
 
 Tiedhfo = Tied(:,'ID');
 
-[rows,~] = size(Tiedhfo);
-for ir = 1:rows
+[r,~] = size(Tiedhfo);
+for ir = 1:r
      
-     s = subtractmed( Tiedd.Signal{ir}  );
+     %s = subtractmed(  readvar( Files = Tied.Signal( ir ) , ReadFun = @(x)loadbin(x, [1,5000] , 'double' ), CatDim = 1 )   );
+     s = fevalc(  Tied.Signal( ir )   );
      %[b,~] = filtersfavourite('BPripples',fs);
      %sf = filtfilt(b,1,s);
 
@@ -41,6 +42,7 @@ for ir = 1:rows
            Tiedhfo.RpeaksInd{ir} = ds.peaksInd(lensI(1),:);
            Tiedhfo.Rfreq(ir) = ds.hfo_freqs(lensI(1));
            Tiedhfo.Rpwr(ir) = mean( ds.rms_fd( ds.OOI(1) : ds.OOI(2) ) );
+           Tiedhfo.Rlength_ms(ir) = 1000*( ds.OOI(2)-ds.OOI(1) )/fs;
        else
            Tiedhfo.HasR(ir) = false;
        end
@@ -72,7 +74,7 @@ for ir = 1:rows
            Tiedhfo.FRpeaksInd{ir} = ds.peaksInd(lensI(1),:);
            Tiedhfo.FRfreq(ir) = ds.hfo_freqs(lensI(1));
            Tiedhfo.FRpwr(ir) = mean( ds.rms_fd( ds.OOI(1) : ds.OOI(2) ) );
-
+           Tiedhfo.FRlength_ms(ir) = 1000*( ds.OOI(2)-ds.OOI(1) )/fs;
        else
            Tiedhfo.HasFR(ir) = false;
        end
@@ -92,8 +94,15 @@ for ir = 1:rows
 
      %Tiedhfo = tableAppend(Source = TiedOneFile, Target = Tiedhfo);
    
-     a.verboser.sprintf2('ProgressPerc',round(100*ir/rows),'HFO detection1');
+     a.verboser.sprintf2('ProgressPerc',round(100*ir/r),'HFO detection1');
 end
+
+%            Tiedhfo.FRfreq(ir) = ds.hfo_freqs(lensI(1));
+%            Tiedhfo.FRpwr(ir) = mean( ds.rms_fd( ds.OOI(1) : ds.OOI(2) ) );
+%            Tiedhfo.FRlength_ms(ir) =
+
+colsToStandardize = {'FRfreq','FRpwr','FRlength_ms','Rfreq','Rpwr','Rlength_ms'};
+Tiedhfo(:,colsToStandardize ) = standardizeMissing(  Tiedhfo(:,colsToStandardize ) , 0) ;
 
 Tiedhfo_default=Tiedhfo;
 save7fp = a.pwd('Tiedhfo_default.mat'); save7

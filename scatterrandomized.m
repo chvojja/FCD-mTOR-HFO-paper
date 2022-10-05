@@ -1,12 +1,18 @@
-function hb1 = scatterrandomized(varargin)
+function hb1 = scatterrandomized(nv)
 %SCATTERRANDOM Summary of this function goes here
 %   Detailed explanation goes here
-y=varargin{2};
+% varargin{1} = Cloud Width
+arguments 
+    nv.CloudWidth=0.1;
+    nv.ScatterParams;
+end
+
+y=nv.ScatterParams{2};
 N=numel(y);
 
-offsets = 0.1*rand(size(y));
+offsets = nv.CloudWidth*rand(size(y)) - 0.5*nv.CloudWidth;
 
-hb1 = scatter(varargin{1}+offsets,varargin{2:end}); 
+hb1 = scatter(nv.ScatterParams{1} + offsets,nv.ScatterParams{2:end}); 
 
 end
 

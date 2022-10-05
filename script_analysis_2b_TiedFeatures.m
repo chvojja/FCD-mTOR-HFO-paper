@@ -15,8 +15,8 @@ Nsignal = 5000;
 [rows,c] = size(Tied);
 for ir = 1:rows
 
-     
-     s = subtractmed( Tiedd.Signal{ir}  );
+     s = readvar( Files = Tied.Signal( ir ) , ReadFun = @(x)loadbin(x, [1,5000] , 'double' ), CatDim = 1 );
+     s = subtractmed( s  );
 
      s = filtfilt(ones(1,10)/10,1,s);
 
