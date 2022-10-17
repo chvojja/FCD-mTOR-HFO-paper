@@ -6,7 +6,7 @@ Tiedhfo = Tied(:,'ID');
 for ir = 1:r
      
      %s = subtractmed(  readvar( Files = Tied.Signal( ir ) , ReadFun = @(x)loadbin(x, [1,5000] , 'double' ), CatDim = 1 )   );
-     s = fevalc(  Tied.Signal( ir )   );
+     s =  loadfun(plt.loadSignalIED, Tied.Signal( ir )  );
      %[b,~] = filtersfavourite('BPripples',fs);
      %sf = filtfilt(b,1,s);
 

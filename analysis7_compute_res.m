@@ -40,10 +40,14 @@ TsubRes_inout( iBilateral, : ) = [];
 save7fp = a.pwd('TsubRes_inout.mat'); save7
 
 % Compute features
-[ Tplt_CtrlVsTreat , Tplt_OutVsIn ] =  getTablePvals(TsubRes,TsubRes_inout);
+[ Tplt_CtrlVsTreat , Tplt_OutVsIn ] =  getTablePvals(TsubRes,TsubRes_inout( TsubRes_inout.Role == 'TREAT' , : ) );
 
 Tplt_CtrlVsTreat = rownames2var( Tplt_CtrlVsTreat , 'Features' );
 Tplt_OutVsIn = rownames2var( Tplt_OutVsIn , 'Features' );
+
+save7fp = a.pwd('Tplt_CtrlVsTreat.mat'); save7
+save7fp = a.pwd('Tplt_OutVsIn.mat'); save7
+
 writetable( Tplt_CtrlVsTreat , a.pwd('Tplt_CtrlVsTreat.xlsx') );
 writetable( Tplt_OutVsIn , a.pwd('Tplt_OutVsIn.xlsx') );
 
@@ -106,7 +110,6 @@ TsubRes = Tsub;
 TsubRes = perSubjectResFast(TsubRes, Tiedf, VKJeeg);
 TsubRes = perSubjectResSlow(TsubRes, Tiedf);
 
-
 end
 
 
@@ -116,7 +119,8 @@ subjects = TsubRes.Subject; %(TsubRes.Role =='CTRL');
 Nsubj = numel(subjects);
 for ir = 1:Nsubj
     subject = subjects(ir);
-    x =  fevalc(  Tiedf.Signal( Tiedf.Subject == subject )   ); % signals from one subject
+     % signals from one subject
+    x =  loadfun( plt.loadSignalIED, Tiedf.Signal( Tiedf.Subject == subject )  );
 
     % means
     xmed = median(x,2); % mean IED

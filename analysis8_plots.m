@@ -1,3 +1,6 @@
+% On Subsampled
+% selectedIdx = randpickpercent(1:size(Tiedf,1),20);
+% Tiedf = Tiedf(selectedIdx,:);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -17,17 +20,25 @@ drawnow;
 resize2cm(plt.w,plt.h);
 %
 
+
 %sp(1) = subplot(2,6,[1 2 3]);
 axes(sp(1));
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'CTRL' , :)    ,   Tiedf( Tiedf.InLesion == true , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot(ied,'r','LineWidth',linewidth); 
+ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+% selectL = TpltSig_CtrlVsTreat.Role == 'CTRL' & TpltSig_CtrlVsTreat.InLesion;
+% ied = TpltSig_CtrlVsTreat.ied( selectL );
+% iedsems = TpltSig_CtrlVsTreat.iedsems( selectL );
+
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
 
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'CTRL', :)    ,   Tiedf( Tiedf.InLesion == false , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot(ied,'k','LineWidth',linewidth); 
+ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
 
-ylabel('Amplitude, mV');
+xlabel('time, ms')
+ylabel('amplitude, mV');
 legend([hp1 hp2],'Lesion', 'Outside');
 title('Controls');
 
@@ -36,18 +47,21 @@ title('Controls');
 axes(sp(2));
 
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.InLesion == true , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot(ied,'r','LineWidth',linewidth); 
+ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
+hp1 = plot( 1000*s2t(ied,fs) , ied,'r','LineWidth',linewidth); 
 
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.InLesion == false , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot(ied,'k','LineWidth',linewidth); 
+ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
+hp2 = plot( 1000*s2t(ied,fs), ied,'k','LineWidth',linewidth); 
 
+xlabel(plt.labeltimems);
 %ylabel('Amplitude, mV');
 %legend([hp1 hp2],'Lesion', 'Outside');
 title('FCD');
 
-
+%
 % IED rate
 
 % pcka a tabulku spocitat jinde a tady jen kreslit
@@ -56,26 +70,23 @@ title('FCD');
 feature = 'rateIED_min';
 labels.ylabel = 'IED rate, event/min.';
 
-%sp(3) = subplot(2,6,[7 8]);
 axes(sp(3));
-
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(labels.ylabel);
 
-%sp(4) = subplot(2,6,[9 10]);
 axes(sp(4));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 
-%sp(5) =  subplot(2,6,[11 12]);
 axes(sp(5));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 
 %resize2tight();
-
+setall('LineWidth',0.5,'FontSize',plt.FontSize);
+savefig( a.pwd([ ' Fig3.fig']) );
 printpaper(  a.pwd([ ' Fig3.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 
 
-%% Fig 4 PSD plots
+%% Fig 4 
 
 figurefull;
 sp(1) = subplot(2,6,[1 2]);  % This has to be drawn first to be able to draw significant line exactly :((
@@ -88,90 +99,355 @@ drawnow;
 resize2cm(plt.w,plt.h);
 
 
-% %% Histogram of oscillations
-% % 
-% controlsL = Tiedf.Role == 'CTRL' ;
+lw = 1;
+
+% PSD plots
+axes(sp(1)); % Mean PSDs
+
+group = 'CTRL';
+[pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
+hs1 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='k' );
+%set(gca, 'XScale', 'log', 'YScale','log');
+
+group = 'TREAT';
+[pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw ); hold on;
+hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
+
+formatAsPSDplot();
+ylabel('PSD');
+legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
+title('All');
+hold off;
+
+% set(gca, 'XScale', 'log', 'YScale','log');
+% grid
 % 
-% selectL = controlsL;
-% x = double( cell2mat( Tiedf.Signal( selectL  )  ) );
-% x = readvar( Folder = a.pwd(['Tied' filesep 'Signal']), Tiedf.ID( selectL  );
-% x = readvar( Files = Tiedf.SignalFile( selectL ) , ReadFun = @(x)loadbin(x, [1,5000] , 'double' ), 1 );
-% ied_avg_CTRL =  mean( x - mean(x,2) , 1 ) ;
-% 
-% x = double( cell2mat( Tiedf.RpeaksInd( selectL & Tiedf.HasR )  ) );
-% RpeaksCount_CTRL = sum(x);
-% x = double( cell2mat( Tiedf.FRpeaksInd( selectL & Tiedf.HasFR )  ) );
-% FRpeaksCount_CTRL = sum(x);
-% 
-% 
-% 
-% fcdsL = Tiedf.Role == 'TREAT'  ;
-% 
-% selectL = fcdsL;
-% x = double( cell2mat( Tiedf.Signal( selectL  )  ) );
-% ied_avg_TREAT =  mean( x - mean(x,2) , 1 ) ;
-% 
-% x = double( cell2mat( Tiedf.Signal( selectL & Tiedf.HasR  )  ) );
-% ied_avgR_TREAT =  mean( x - mean(x,2) , 1 ) ;
-% x = double( cell2mat( Tiedf.Signal( selectL & Tiedf.HasFR  )  ) );
-% ied_avgFR_TREAT =  mean( x - mean(x,2) , 1 ) ;
-% 
-% x = double( cell2mat( Tiedf.RpeaksInd( selectL & Tiedf.HasR )  ) );
-% RpeaksCount_TREAT = sum(x);
-% x = double( cell2mat( Tiedf.FRpeaksInd( selectL & Tiedf.HasFR )  ) );
-% FRpeaksCount_TREAT = sum(x);
-% 
-% %% R plot histogram of oscillations
-% feature = 'peakOscillations_Lesion_R';
-% feature = 'peakOscillations_OUT_R';
-% NbinsOnseSide = 20;
-% NsOneBin = 25;
-% % IN lesion
-% 
-% selectL =  TsubRes_inout.InLesion == false;
-% meanIED = mean( double( cell2mat( TsubRes_inout.meanIED( selectL  )  ) )  );
-% 
-% peakcounts_subjects = double( cell2mat( TsubRes_inout.RpeaksCount( selectL )  ) );
-% peakcountsC = cell(size(data_RpeaksCount,1),1);
-% 
-% for i = 1: size(data_RpeaksCount,1)
-%     %[c,b,Nb,sI,eI] = binPeakCounts(peakcounts_subjects(i,:),NbinsOnseSide);
-% Nframe = 5000;
-% NOneSide = NsOneBin * NbinsOnseSide;
-% sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
-% peakCountsCropped = peakcounts_subjects(i, sI : eI );
-% groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
-% counts = splitapply(@sum,peakCountsCropped,groups_bins);
-% Nb=eI-sI+1;
-% 
-%     peakcountsC{i} = counts/sum(counts);
-% end
-% peakcounts=cell2mat(peakcountsC);
-% meancounts = nanmean(peakcounts);
-% sems = zeros(size(meancounts));
-% % compute sem
-% for i=1:size(peakcounts,2)
-%     [~,ss] =meansem(peakcounts(:,i));
-%     sems(i) = ss;
-% end
-% 
-% 
-% 
-% figure;
-% h1 = plot(meanIED(sI:eI), 'LineWidth',1.5,'Color','k'); hold on;
-% Nb=eI-sI+1;
-% bar(linspace(1,Nb,NbinsOnseSide*2)  ,    meancounts ,'k')  %max(ied_avg)
-% 
-% hold on
-% er = errorbar(linspace(1,Nb,NbinsOnseSide*2),  meancounts  ,sems,sems);    
-% er.Color = [0 0 0];                            
-% er.LineStyle = 'none';  
-% hold off
-% 
-% ylabel('probability')
-% title('Distribution of R oscillation peaks (FCD) with respect to average IED (Out FCD)');
-% 
-% print2pngPaper(a.pwd([ picIdentifier feature '2.png']),1.3*paperW,1.3*paperH/2);
+
+% legend({'Control', 'FCD'});
+% ylim([10^-9 10^-2]);
+% xlabel('Frequency, Hz');
+% ylabel('PSD');
+% hold off;
+
+
+axes(sp(2)); % Individual plots
+
+group = 'CTRL';
+rows_for_group = find( TsubRes.Role ==  group );
+for i = rows_for_group'
+    pwelch_y = TsubRes.IEDpwelch{i};
+    pwelch_f = TsubRes.IEDfwelch{i};
+
+    plot(pwelch_f+1,pwelch_y,'Color',plt.colors.( group  )  ,'LineWidth', lw ); hold on;
+    
+end
+formatAsPSDplot();
+yticklabels({});
+title('Control');
+
+
+axes(sp(3)); % Individual plots
+
+group = 'TREAT';
+rows_for_group = find( TsubRes.Role ==  group );
+for i = rows_for_group'
+    pwelch_y = TsubRes.IEDpwelch{i};
+    pwelch_f = TsubRes.IEDfwelch{i};
+
+    plot(pwelch_f+1,pwelch_y,'Color',plt.colors.( group  )  ,'LineWidth', lw ); hold on;
+
+end
+formatAsPSDplot();
+yticklabels({});
+title('FCD');
+%
+
+% Pie Graph
+axes(sp(4)); 
+T = TsubRes(TsubRes.Role=='TREAT',:);  % Only Treatments
+NiedsTotal = sum(T.Nieds);
+%
+countsOnlyIEDsNoRsNoFRs =  T.Nieds - (T.NRs+T.NFRs-T.NFRswithRs)  ;
+countsOnlyRs = T.NRs-T.NFRswithRs;
+countsOnlyRFRs = T.NFRswithRs;
+countsOnlyFRs = T.NFRs-T.NFRswithRs;
+
+pieData(1) = sum(countsOnlyIEDsNoRsNoFRs) / NiedsTotal ;
+pieData(2) = sum(countsOnlyRs) / NiedsTotal;
+pieData(3) = sum(countsOnlyRFRs) / NiedsTotal;
+pieData(4) = sum(countsOnlyFRs) / NiedsTotal;
+labelsDetTypes = {'IED','R',['FR+R'],'FR'};
+for i=1:numel(labelsDetTypes )
+    labelsPerc{i} = [sprintf('%s (%.1f%%)', labelsDetTypes {i}, 100*pieData(i))   ];     
+end
+
+pieHandle = pie(pieData,labelsPerc);
+colors = favouritecolors({'epipink','halflife','yellow','red'});
+posLabel = 0.13+[0.6 1.1 1.45 1.2];
+for iHandle = 2:2:2*numel(labelsPerc)
+    pieHandle(iHandle-1).FaceColor=colors(iHandle/2,:);
+    pieHandle(iHandle).Position = posLabel(iHandle/2)*pieHandle(iHandle).Position;
+end
+% rotate
+ax = gca;
+ax.View = [180 90];
+title(['FCD animals, ' newline ' pooled together']);
+
+
+% counts as boxplots per count type;
+axes(sp(5)); 
+
+% only treatment animals
+Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLesion',feature}); 
+Tplot.InLesion = categorical(Tplot.InLesion);
+Tplot.InLesion = cat2num(Tplot.InLesion,'false',2,'true',1);
+
+percentsEachAnimal = 100*[countsOnlyIEDsNoRsNoFRs countsOnlyRs countsOnlyFRs  countsOnlyRFRs ]./T.Nieds;
+
+yyaxis left
+barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
+barsData(:,2:end) = NaN;
+hbcounts1=boxchart( barsData ,'BoxFaceColor','k','LineWidth',1.2);
+ax= gca; ax.YAxis(1).Color= favouritecolors('epipink');
+hbcounts1(1).BoxFaceColor = favouritecolors('epipink');
+ylabel('IED, %');
+
+yyaxis right
+barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
+barsData(:,1) = NaN;
+hbcounts2=boxchart( barsData ,'BoxFaceColor','k','LineWidth',1.2);
+hbcounts2(1).MarkerColor = [0 0 0];
+ax= gca; ax.YAxis(2).Color= favouritecolors('halflife');
+hbcounts2(1).BoxFaceColor = favouritecolors('halflife');
+ylabel('HFO, %');
+
+NdetTypes = numel( labelsDetTypes );
+set(gca,'xticklabel', [labelsDetTypes([1 2 4 ])  { 'FR+R' 'R/FR' } ] );
+
+setall('LineWidth',0.5,'FontSize',plt.FontSize);
+
+savefig( a.pwd([ ' Fig4.fig']) );
+printpaper(  a.pwd([ ' Fig4.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+
+
+
+%% Fig 5 Ripples
+figurefull;
+% This has to be drawn first to be able to draw significant line exactly :((
+sp(1) = subplot(3,4,1);  
+sp(2) = subplot(3,4,2); 
+sp(3) = subplot(3,4,3); 
+sp(4) = subplot(3,4,4); 
+sp(5) = subplot(3,4,5); 
+sp(6) = subplot(3,4,6); 
+sp(7) = subplot(3,4,7);  
+sp(8) = subplot(3,4,8); 
+sp(9) = subplot(3,4,9); 
+sp(10) = subplot(3,4,10); 
+sp(11) = subplot(3,4,11); 
+sp(12) = subplot(3,4,12); 
+drawnow;
+resize2cm(plt.w,plt.h);
+
+
+axes(sp(1));
+
+[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.HasR == true , : )    ) ;
+ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
+
+[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == false , : )    ) ;
+ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
+
+xlabel(plt.labeltimems)
+ylabel('amplitude, mV');
+legend([hp1 hp2],'IED+R', 'IED-R', 'Location','southwest');
+title('Mean IED w/wo ripple');
+
+axes(sp(2));
+labels =[];
+feature = 'rateR_min';
+[hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
+ylabel(plt.labelrateMin);
+set(gca,'YLim',[-0.2 1.2]);
+
+axes(sp(3));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[-0.2 1.2]);
+set(gca,'YTick', []);
+
+axes(sp(4));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[-0.2 1.2]);
+set(gca,'YTick', []);
+
+
+axes(sp(5));
+feature = 'Rfreq';
+[hs] = plotSwarm_CXvsTREAT(Tiedf,feature);
+ylabel(plt.labelfreqHz);
+set(gca,'YLim',[30 150]);
+
+axes(sp(6));
+[hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
+set(gca,'YLim',[50 100]);
+
+axes(sp(7));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[50 100]);
+set(gca,'YTick', []);
+
+axes(sp(8));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[50 100]);
+set(gca,'YTick', []);
+
+labels =[];
+feature = 'RtoIEDrateShare';
+feature = 'RinIEDs';
+
+axes(sp(9));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+ylabel('R/IED rate share, %');
+
+axes(sp(10));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+
+
+% R plot histogram of oscillations
+feature = 'RpeaksCount';
+
+axes(sp(11));
+Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == true, :);
+plotHistCount(Tplot ,feature);
+ylabel('share, %');
+title('Inside');
+
+
+axes(sp(12));
+Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
+plotHistCount(Tplot ,feature);
+title('Outside');
+
+
+setall('LineWidth',0.5,'FontSize',plt.FontSize);
+
+savefig( a.pwd([ ' Fig5.fig']) );
+printpaper(  a.pwd([ ' Fig5.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+
+
+%% Fig 6 Fast ripples
+figurefull;
+% This has to be drawn first to be able to draw significant line exactly :((
+sp(1) = subplot(3,4,1);  
+sp(2) = subplot(3,4,2); 
+sp(3) = subplot(3,4,3); 
+sp(4) = subplot(3,4,4); 
+sp(5) = subplot(3,4,5); 
+sp(6) = subplot(3,4,6); 
+sp(7) = subplot(3,4,7);  
+sp(8) = subplot(3,4,8); 
+sp(9) = subplot(3,4,9); 
+sp(10) = subplot(3,4,10); 
+sp(11) = subplot(3,4,11); 
+sp(12) = subplot(3,4,12); 
+drawnow;
+resize2cm(plt.w,plt.h);
+
+
+axes(sp(1));
+
+[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.HasFR == true , : )    ) ;
+ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
+
+[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasFR == false , : )    ) ;
+ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
+confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
+
+xlabel(plt.labeltimems)
+ylabel('amplitude, mV');
+legend([hp1 hp2],'IED+FR', 'IED-FR', 'Location','southwest');
+title('Mean IED w/wo FR');
+
+axes(sp(2));
+feature = 'rateFR_min';
+
+[hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
+ylabel(plt.labelrateMin);
+%set(gca,'YLim',[-0.2 1.2]);
+
+axes(sp(3));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+%set(gca,'YLim',[-0.2 1.2]);
+set(gca,'YTick', []);
+
+axes(sp(4));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+%set(gca,'YLim',[-0.2 1.6]);
+set(gca,'YTick', []);
+
+
+axes(sp(5));
+feature = 'FRfreq';
+[hs] = plotSwarm_CXvsTREAT(Tiedf,feature);
+ylabel(plt.labelfreqHz);
+set(gca,'YLim',[100 700]);
+
+axes(sp(6));
+[hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
+set(gca,'YLim',[350 650]);
+
+axes(sp(7));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[350 650]);
+set(gca,'YTick', []);
+
+axes(sp(8));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+set(gca,'YLim',[350 650]);
+set(gca,'YTick', []);
+
+labels =[];
+feature = 'FRtoIEDrateShare';
+feature = 'FRinRFRs';
+
+axes(sp(9));
+[h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+ylabel('FR/IED rate share, %');
+
+axes(sp(10));
+[h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+
+
+% FR plot histogram of oscillations
+feature = 'FRpeaksCount';
+
+axes(sp(11));
+Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == true, :);
+plotHistCount(Tplot ,feature);
+ylabel('share, %');
+title('Inside');
+
+
+axes(sp(12));
+Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
+plotHistCount(Tplot ,feature);
+title('Outside');
+
+
+setall('LineWidth',0.5,'FontSize',plt.FontSize);
+
+savefig( a.pwd([ ' Fig6.fig']) );
+printpaper(  a.pwd([ ' Fig6.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+
 
 %%
 
@@ -222,6 +498,12 @@ resize2cm(plt.w,plt.h);
 % 
 % title('Distribution of R oscillation peaks (FCD) with respect to average IED (FCD, CTRL)');
 % 
+
+
+
+
+
+
 % 
 % %% FR  plot histogram of oscillations
 % 
@@ -264,57 +546,6 @@ resize2cm(plt.w,plt.h);
 % % plot(ied_avg_TREAT);
 
 
-
-% %% PSD each 
-% r = size(Tsub,1);
-% 
-% for i = 1:r
-%     pw = Tsub.IEDpwelch{i};
-%     fw = Tsub.IEDfwelch{i};
-%     subplot(5,2,i);
-%     semilogy(fw,pw,'Color',0.5*color.( char(Tsub.Role(i))   )  ,'LineWidth',1 );
-%     grid
-%     title([ char(Tsub.Subject(i)) '  '  num2str(Tsub.Number(i))  ]);
-%     %legend({'Control', 'FCD'});
-%     xlabel('Hz');
-%     ylabel('PSD')
-% end
-% paperW = 8;
-% paperH = 12;
-% print2pngPaper(a.pwd([ picIdentifier 'PSDeach.png']),paperW,paperH);
-% 
-% %% PSD means
-% 
-% for i = 1:r
-%     pw = Tsub.IEDpwelch{i};
-%     fw = Tsub.IEDfwelch{i};
-% 
-%     semilogy(fw,pw,'Color',0.5*color.( char(Tsub.Role(i))   )  ,'LineWidth',0.5 ); hold on;
-% end
-% % means
-% group = 'CTRL';
-% x = double( cell2mat( Tsub.IEDpwelch(  Tsub.Role ==  group  )  ) );
-% %x =  mean( x - mean(x,2) , 1 ) ;
-% x =  mean( x , 1 ) ;
-% semilogy(fw,x,'Color',color.( group  )  ,'LineWidth',1.5 ); hold on;
-% 
-% group = 'TREAT';
-% x = double( cell2mat( Tsub.IEDpwelch(  Tsub.Role ==  group  )  ) );
-% %x =  mean( x - mean(x,2) , 1 ) ;
-% x =  mean( x , 1 ) ;
-% semilogy(fw,x,'Color',color.( group  )  ,'LineWidth',1.5 ); hold on;
-% grid
-% 
-% title('Welch Power Spectral Density estimate, all subjects with means')
-% %legend({'Control', 'FCD'});
-% xlabel('Hz');
-% ylabel('PSD')
-% hold off;
-% 
-% 
-% paperW = 8;
-% paperH = 5;
-% print2pngPaper(a.pwd([ picIdentifier 'PSD.png']),paperW,paperH);
 
 
 % %% PSD FCD lesion vs outer
@@ -378,235 +609,288 @@ resize2cm(plt.w,plt.h);
 % color.TREAT = favouritecolors('EpiPink');
 % cellparams.scatter.TREAT = {velikostKolecka,'LineWidth',1.5,'MarkerFaceColor',color_pink,'MarkerEdgeColor',color };
 
-%% 
-
+% %% 
 % 
-% iToPlot = [1];
 % 
-% for i = iToPlot
+% Tst_CtrlVsTreat = table;
+% Tst_OutVsIn = table;
+% %% IED Skewness
 % 
-% end
+% feature = 'IEDskew'; 
+% labels.ylabel = 'Skewness, [-]';
 % 
-
-Tst_CtrlVsTreat = table;
-Tst_OutVsIn = table;
-%% IED Skewness
-
-feature = 'IEDskew'; 
-labels.ylabel = 'Skewness, [-]';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-set(hu,'YLim',[-8 6]);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-
-%% IED ampl
-
-feature = 'IEDampl_mV'; 
-labels.ylabel = 'IED amplitude, mV';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-%% IED width
-
-
-feature = 'IEDwidth_msec'; 
-labels.ylabel = 'IED width, ms';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-%% R rate   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% smaller size
-feature = 'rateR_min';
-labels.ylabel = 'Ripple rate, event/min.';
-
-stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-%% R amp
-
-feature = 'Rpwr'; 
-labels.ylabel = 'Ripple power';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-%%
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-%% R freq
-
-feature = 'Rfreq'; 
-labels.ylabel = 'Frequency, Hz';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-
-
-%% R duration
-
-feature = 'Rlength_ms'; 
-labels.ylabel = 'Ripple duration, ms';
-
-[hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-%% R in IEDs
-feature = 'RinIEDs';
-labels.ylabel = '% ripples in IEDs';
-
-stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-%% FR in Rs
-feature = 'FRinRFRs';
-labels.ylabel = '% fast ripples in ripples';
-
-stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
-
-%% IED MED
-feature = 'IEDmed';
-labels.ylabel = 'Median of IED, mV';
-
-stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
-printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
-
-
-[hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
-printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
-lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
-Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% set(hu,'YLim',[-8 6]);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% 
+% %% IED ampl
+% 
+% feature = 'IEDampl_mV'; 
+% labels.ylabel = 'IED amplitude, mV';
+% 
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% %% IED width
+% 
+% 
+% feature = 'IEDwidth_msec'; 
+% labels.ylabel = 'IED width, ms';
+% 
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% %% R rate   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% smaller size
+% feature = 'rateR_min';
+% labels.ylabel = 'Ripple rate, event/min.';
+% 
+% stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% %% R amp
+% 
+% feature = 'Rpwr'; 
+% labels.ylabel = 'Ripple power';
+% 
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% %%
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% %% R freq
+% 
+% feature = 'Rfreq'; 
+% labels.ylabel = 'Frequency, Hz';
+% 
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% 
+% 
+% %% R duration
+% 
+% feature = 'Rlength_ms'; 
+% labels.ylabel = 'Ripple duration, ms';
+% 
+% [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,TsubRes,feature,labels,plt.w,plt.h);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% %% R in IEDs
+% feature = 'RinIEDs';
+% labels.ylabel = '% ripples in IEDs';
+% 
+% stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% %% FR in Rs
+% feature = 'FRinRFRs';
+% labels.ylabel = '% fast ripples in ripples';
+% 
+% stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
+% 
+% %% IED MED
+% feature = 'IEDmed';
+% labels.ylabel = 'Median of IED, mV';
+% 
+% stats = plotDotBoxplot_CXvsTREAT(TsubRes,feature,labels,plt.w,plt.h/2);
+% printpaper(  a.pwd([ picIdentifier feature '1.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'CTRL';  Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'TREAT'; Tst_CtrlVsTreat( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_CtrlVsTreat{ feature , 'p' } =  stats.p;
+% 
+% 
+% [hu,hl,stats] = plotUpperLower_OutvsIn(TsubRes_inout,feature,labels);
+% printpaper(  a.pwd([ picIdentifier feature '2.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% 
+% lbl = 'Inside';  Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% lbl = 'Outside'; Tst_OutVsIn( feature , lbl ) =  { stats.(lbl).meanmeasure  };
+% Tst_OutVsIn{ feature , 'p' } =  stats.p;
 
 
 %% 5 Ripples  , IED with and without R  with  confidence
 
-%figurefull;
+% %figurefull;
+% 
+% [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == true , : )    ) ;
+% confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
+% plot(ied,'r','LineWidth',1.2); 
+% 
+% [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == false , : )    ) ;
+% confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
+% plot(ied,'k','LineWidth',1.2); 
+% 
+% ylabel('Amplitude, mV');
+% 
+% legend({'IED with ripple','IED without ripple'});
+% 
+% 
+% 
 
-[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == true , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-plot(ied,'r','LineWidth',1.2); 
 
-[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == false , : )    ) ;
-confidenceshade( 1:5000 , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-plot(ied,'k','LineWidth',1.2); 
+function plotHistCount(TwithPeakCounts,feature)
 
-ylabel('Amplitude, mV');
+hold on
+peakcounts =  cell2mat(  TwithPeakCounts.(feature)  );
+meanIED = sum(cell2mat(TwithPeakCounts.meanIED),1);
 
-legend({'IED with ripple','IED without ripple'});
+NbinsOnseSide = 20;
+NsOneBin = 20;
+fs = 5000;
+
+peakcountsBinedProbabilityPerSubjC = cell(size(peakcounts,1),1);
+for i = 1: size(peakcounts,1)
+    %[c,b,Nb,sI,eI] = binPeakCounts(peakcounts_subjects(i,:),NbinsOnseSide); [counts,groups_bins,Nb] = binPeakCounts(peakcounts,NbinsOnseSide)
+    Nframe = 5000;
+    NOneSide = NsOneBin * NbinsOnseSide;
+    sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
+    peakCountsCropped = peakcounts(i, sI : eI );
+    groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
+    counts = splitapply(@sum,peakCountsCropped,groups_bins);
+    Nb=eI-sI+1;
+
+    peakcountsBinedProbabilityPerSubjC{i} = 100*counts/sum(counts);
+end
 
 
+
+peakcountsBinedProbabilityPerSubj=cell2mat(peakcountsBinedProbabilityPerSubjC);
+means = nanmean(peakcountsBinedProbabilityPerSubj);
+sems = nansem( peakcountsBinedProbabilityPerSubj );
+
+% rescale meanIED
+meanIED = meanIED - max(meanIED);
+meanIED = meanIED * max(means);
+% plot
+
+h1 = plot(s2t(meanIED(sI:eI),fs),meanIED(sI:eI)-2,'Color','k'); hold on;
+xlabel(plt.labeltimems);
+Nb=eI-sI+1;
+
+maxTime = max(get(gca,'XLim'));
+bar(  linspace(0,maxTime,NbinsOnseSide*2)    ,    means ,'k')  %max(ied_avg)
+
+
+er = errorbar( linspace(0,maxTime,NbinsOnseSide*2) ,  means  ,sems,sems);    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+set(gca,'YLim', [min(meanIED) max(means+sems)]);
+ylimoptimal(PercentMargin = 0.05);
+
+yt = get(gca,'yticklabels');
+ytNum = cellstr2num(yt);
+yt(ytNum<0)={' '};
+set(gca,'yticklabels',yt);
+
+
+end
 
 
 
@@ -656,39 +940,24 @@ box off;
 end
 
 
-function [hu,hl,stats] = plotUpperLower_CXvsTREAT(Tiedf,Tsub,feature,labels,w,h)
 
-figurefull;
-labels.xticklabel = {'Control','FCD'};
-
-hu = subplot(2,1,1);
-
+function [hs] = plotSwarm_CXvsTREAT(Tiedf,feature)
+hold on;
+% plot pooled scatter
 Tplot = Tiedf(:,{'Subject','Role',feature});
 Tplot.Role = cat2num(Tplot.Role,'CTRL',1,'TREAT',2);
 hs = swarmchartbetter(Tplot,'Role',feature,'filled','ColorVariable','Subject' );
 hs.XJitterWidth = 0.5;
 
-%set(gca,'YLim',[-3.5 0]);
-%set(gca,'YLim',[-8 6]);
-
 set(gca,'XLim',[0.5 2.5]);
 set(gca,'XTick',[1 2]);
-set(gca,'xticklabel',labels.xticklabel);
-% xlabel('Skewness');
-ylabel(labels.ylabel);
+set(gca,'xticklabel', plt.xticklabelCTRLTREAT);
+
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
-resize2cm(w,h);
-%resize2tight();
-%----------------------------------
-
-hl = subplot(2,1,2);  hold on;
-% plot per subject s boxplotem
-stats = plotDotBoxplot_CXvsTREAT(Tsub,feature,labels,w,h);
-
-
-
 end
+
+
 
 function [hs,hb2] = plotDotBoxplot_CXvsTREAT(Tsub,feature,Tstats)
 hold on;
@@ -718,33 +987,8 @@ set(gca,'xticklabel',labels.xticklabel);
 
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
-Tstats{feature,'p'} =0.005;
+%Tstats{feature,'p'} =0.005;
 plotsigline(  Tstats{feature,'p'}   , x12Sig, hb2.YData );
-
-% resize2cm(w,h);
-% %resize2tight();
-% 
-% % add statistics
-% xVals = sort( unique( hb2.XData ) );
-% 
-% labelSelected = 'CTRL';
-% data =  hb2.YData( hb2.XData == xVals(1)  ); data1 = data;
-% stats.(labelSelected).meanmeasure =  printmeansem(  plt.barsMeanFun(data)  , nansem( data ) );
-% labelSelected = 'TREAT';
-% data =  hb2.YData( hb2.XData == xVals(2)  ); data2 = data;
-% stats.(labelSelected).meanmeasure =  printmeansem(  plt.barsMeanFun(data)  , nansem( data ) );
-% 
-% %[x,y] = tablegroups2num(Tplot(:,{feature,'Role'}),'Role');
-% 
-% if (   any(~isnan(data1)) && any(~isnan(data2))    )
-%         stats.p = ranksum( data1 , data2 ) ;  %sp = 0.01;  % plt.Tst_CtrVsTreat{ feature , 'p' }
-%         plotsigline(  stats.p   , x12Sig, hb2.YData );
-%           disp('Plotted stats')
-% else
-%     disp('Unable to do statistics');
-%     stats.p = NaN;
-% end
-
 
 end
 
@@ -787,6 +1031,7 @@ Tplot.InLesion = categorical(Tplot.InLesion);
 Tplot.InLesion = cat2num(Tplot.InLesion,'false',2,'true',1);
 
 h=boxchart(Tplot.InLesion,Tplot.(feature),'BoxFaceColor','k','LineWidth',1.2);
+h(1).MarkerColor = [0 0 0];
 
 set(gca,'XLim',[0.5 2.5]);
 set(gca,'XTick',[1 2]);
@@ -799,51 +1044,5 @@ plotsigline(  Tstats{feature,'p'}   , x12, h.YData );
 %resize2tight();
 
 
-% %% Stats
-% 
-% labelSelected = 'Outside';
-% data =  hb2.YData( hb2.XData == find(ismember(labels.xticklabel, labelSelected  ))  ); data1 = data;
-% stats.(labelSelected).meanmeasure = printmeansem(  plt.barsMeanFun(data)  , nansem( data ) );
-% 
-% labelSelected = 'Inside';
-% data =  hb2.YData( hb2.XData == find(ismember(labels.xticklabel, labelSelected  ))  ); data2 = data;
-% stats.(labelSelected).meanmeasure = printmeansem(  plt.barsMeanFun(data)  , nansem( data ) );
-% 
-% if (   any(~isnan(data1)) && any(~isnan(data2))    )
-%         stats.p = signrank( data1 , data2 ); % stats.p =0.01;
-%         axes(hu)
-%         plotsigline(  stats.p   , [1 2], hb2.YData ); % x12Sig = sort( unique( Tplot.Role ) ); % x for sig line
-%         axes(hl)
-%         plotsigline(  stats.p   , [1 2], hb2.YData ); % x12Sig = sort( unique( Tplot.Role ) ); % x for sig line
-%         disp('Plotted stats')
-% else
-%     disp('Unable to do statistics');
-%     stats.p = NaN;
-% end
-
 end
-
-   %hb=boxplot(pd.datavector,pd.groupingvector,'Notch','marker','Color','k');
-   
-    %hOutliers = findobj(hb,'Tag','Outliers');
-%     huw=findobj(hb,'Tag', 'Upper Whisker');
-%     hlw=findobj(hb,'Tag', 'Lower Whisker');
-%     y_uw=get(huw,'YData'); y_lw=get(hlw,'YData');
-%     if iscell(y_uw)
-%     max_uw = max(max([y_uw{:}]));
-%     min_lw = min(min([y_lw{:}]));
-%     else
-%     max_uw = max(y_uw);
-%     min_lw = min(y_lw);
-%     end
-%     ylim_no_outliers=[min_lw max_uw]
-%     ylim(ylim_no_outliers);
-
-%     set(gca,'XMinorTick','on','YMinorTick','on');
-%plot_set_limits(pd,opts);
-% plot_set_xylim(0.15,0.15)
-% plot_set_optimal_ytick(pd,opts);
-% plot_add_labels(pd,opts);
-
-
 

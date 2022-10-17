@@ -4,9 +4,9 @@ fs = 5000;
 
 %% Create cohort and gather info about subjects
 % full
-%rmpath('testing'); addpath('full');
+rmpath('testing'); addpath('full');
 % testing
-rmpath('full'); addpath('testing');
+%rmpath('full'); addpath('testing');
 
 
 
@@ -125,7 +125,7 @@ for i = 1:r
      signal_fp = [a.pwd('Tied/Signal') filesep  num2str(Tied.ID(i)) '.dat'];
      
      % Save the signal and save function handle by which to load it again
-     Tied.Signal{i} = eval(  char( sprintf("  @()loadbin( '%s' , [1,5000] , 'double' ) ; ",   signal_fp   ) )  ); % embed the path into the loading function handle
+     Tied.Signal{i} = signal_fp;
      savebin( signal_fp , sPartFinal );
      
      a.verboser.sprintf2('ProgressPerc',round(100*i/r), 'extracting, aligning and saving IED signal');
@@ -153,7 +153,7 @@ Nsignal = round(fs*2*signalEnlargeEachSide_sec);
 [r,c] = size(Tied);
 for ir = 1:r
 
-     s = fevalc(  Tied.Signal( ir )   );
+     s =  loadfun(plt.loadSignalIED, Tied.Signal( ir )  );
      s = subtractmed( s  );
 
      s = filtfilt(ones(1,10)/10,1,s);
@@ -235,7 +235,7 @@ end
 Tiedhfo = load2(a.pwd([hfoDetectionName '.mat'])); 
 Tiedf = Tied;
 Tiedf = Tiedf( Tiedf.LabelName == IEDlabelName , : ); % get rid of different type of label
-picIdentifier = ['IED_' IEDlabelName  '_HFO_' 'Tiedhfo_default' '_'];
+%picIdentifier = ['IED_' IEDlabelName  '_HFO_' 'Tiedhfo_default' '_'];
 
 Tiedf = leftjoinsorted(Tiedf,Tiedhfo,'LeftKeys',{'ID'},'RightKeys',{'ID'}); % 'RightVariables',{'HasR','HasFR'})
 Tiedf = renamevars(Tiedf,'ID_left','ID'); Tiedf = removevars(Tiedf,"ID_right");
@@ -261,12 +261,13 @@ Tsublesions = categorify( leftjoinsorted(Tsublesions,Tsub,'LeftKeys',{'Number'},
 %save7fp = a.pwd('Tsublesions'); save7;
 
 Tiedf = leftjoinsorted(Tiedf,Tsublesions,'LeftKeys',{'Subject','ChName'},'RightKeys',{'Subject','ChName'},'RightVariables',{'InLesion'});
-
+save7fp = a.pwd('Tiedf'); save7;
 
 %% Here we have Tiedf with one particular IED and HFO detection
 analysis7_compute_res;
+
 %%
-analysis7b_plots;
+analysis8_plots;
 
 
 %%
