@@ -33,9 +33,9 @@ save7fp = a.pwd('TsubRes.mat'); save7
 TsubRes_inout = [TsubRes_inlesion ; TsubRes_outlesion];
 TsubRes_inout.ID = [1:size(TsubRes_inout,1)]';
 
-% delete the bilateral animals
-iBilateral =  ismember( TsubRes_inout.Subject, { 'Naty338' , 'TryskoMys' } );
-TsubRes_inout( iBilateral, : ) = [];
+% % delete the bilateral animals
+% iBilateral =  ismember( TsubRes_inout.Subject, { 'Naty338' , 'TryskoMys' } );
+% TsubRes_inout( iBilateral, : ) = [];
 
 save7fp = a.pwd('TsubRes_inout.mat'); save7
 
@@ -61,6 +61,7 @@ subjects = TsubRes.Subject;
 Nsubj = numel(subjects);
 for ir = 1:Nsubj
     subject = subjects(ir);
+   
 
     %     % Features 
     TsubRes.IEDskew( TsubRes.Subject == subject) = meanfun(  Tiedf.IEDskew(Tiedf.Subject == subject )   );  % & Tiedf.Role == 'CTRL' )
@@ -84,6 +85,8 @@ for ir = 1:Nsubj
     TsubRes.RinIEDs( TsubRes.Subject == subject) = round(   100*NRs/Nieds   );
     TsubRes.FRinRFRs( TsubRes.Subject == subject) = round(   100*NFRswithRs/NRs   );
 
+    
+
     % rates
     dataLength_Min = sum( VKJeeg.DurationMin( VKJeeg.Subject == subject )  ); 
     
@@ -99,6 +102,8 @@ for ir = 1:Nsubj
     % HFO FR
     N = numel( find(Tiedf.Subject == subject & Tiedf.HasFR==true  )  ) / Nelectrodes;
     TsubRes.rateFR_min( TsubRes.Subject == subject ) = N/dataLength_Min;
+
+    TsubRes.RtoIEDrateShare( TsubRes.Subject == subject) = 100 * TsubRes.rateR_min( TsubRes.Subject == subject ) / TsubRes.rateIED_min( TsubRes.Subject == subject );
 
 end
 end
@@ -117,8 +122,9 @@ function TsubRes = perSubjectResSlow(TsubRes,Tiedf)
 
 subjects = TsubRes.Subject; %(TsubRes.Role =='CTRL');
 Nsubj = numel(subjects);
-for ir = 1:Nsubj
+for ir = [Nsubj:-1:1]'
     subject = subjects(ir);
+
      % signals from one subject
     x =  loadfun( plt.loadSignalIED, Tiedf.Signal( Tiedf.Subject == subject )  );
 
@@ -132,8 +138,29 @@ for ir = 1:Nsubj
     nff = 5000; fs = 5000;
     if ~isempty(xc)
         [pxxwelch,fwelch] = pwelch( reshape(xc',[],1) , ones(nff,1), [], nff, fs) ; % , 'ConfidenceLevel',0.95);
+        % 50 Hz correction
+        if strcmp(char(subject),'Naty602') % only for this animal
+%             pxxwelch = pxxwelch';
+%             fwelch = fwelch';
+            pxxwelch = 10*log10(pxxwelch);
+
+            psdDB_L = thresholdbyslopestd(pxxwelch,50,8,1.8);
+            pxxwelch(psdDB_L) = NaN;
+            
+            pxxwelch(1:6) = pxxwelch(7);
+            pxxwelch = fillgapsbylpc(pxxwelch,5);
+
+            
+
+            pxxwelch=10.^(pxxwelch/10);
+        TsubRes.IEDpwelch( TsubRes.Subject == subject)  = {pxxwelch'};
+        TsubRes.IEDfwelch( TsubRes.Subject == subject)  = {fwelch'};    
+
+        else
         TsubRes.IEDpwelch( TsubRes.Subject == subject)  = {pxxwelch'};
         TsubRes.IEDfwelch( TsubRes.Subject == subject)  = {fwelch'};
+        end
+        
     end
     
 %     % average IED

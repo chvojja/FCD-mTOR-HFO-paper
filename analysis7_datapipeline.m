@@ -208,6 +208,7 @@ script_analysis_3_HFOs2default;
 
 %a.error
 
+
 %% Set desired analysis labels
 
 % % if ~exist('Tied'), 
@@ -227,7 +228,12 @@ IEDlabelName = 'dontmiss5000Hz' ;
 IEDlabelName = 'default' ; 
 hfoDetectionName = 'Tiedhfo_default';
 %hfoDetectionName = 'Tiedhfo_strict';
-%% Create Tiedf
+
+
+hfoDetectionName = 'TiedhfoDefaultFreqsByStockwell';
+%recomputeFreq_Tiedhfo(Tied, Tiedhfo, hfoDetectionName );  
+%%
+% Create Tiedf
 
 if exist('Tiedf')
     clear Tiedf;
@@ -263,11 +269,29 @@ Tsublesions = categorify( leftjoinsorted(Tsublesions,Tsub,'LeftKeys',{'Number'},
 Tiedf = leftjoinsorted(Tiedf,Tsublesions,'LeftKeys',{'Subject','ChName'},'RightKeys',{'Subject','ChName'},'RightVariables',{'InLesion'});
 save7fp = a.pwd('Tiedf'); save7;
 
-%% Here we have Tiedf with one particular IED and HFO detection
+% Here we have Tiedf with one particular IED and HFO detection
+
 analysis7_compute_res;
 
 %%
-analysis8_plots;
+load(a.pwd('Tiedf')); 
+
+load(a.pwd('TsubRes.mat'));
+load(a.pwd('TsubRes_inout.mat'));
+
+load(a.pwd('Tplt_CtrlVsTreat.mat'));
+load(a.pwd('Tplt_OutVsIn.mat')); 
+
+
+psdDB_L = thresholdbyslopestd(pxxwelch,50,8,1.8);
+pxxwelch(psdDB_L) = NaN;
+
+pxxwelch(1:6) = pxxwelch(7);
+pxxwelch = fillgapsbylpc(pxxwelch,5);
+
+%%
+%
+analysis9_plots;
 
 
 %%

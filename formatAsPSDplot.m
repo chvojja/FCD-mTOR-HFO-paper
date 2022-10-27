@@ -1,7 +1,7 @@
 function formatAsPSDplot()
 
 set(gca, 'XScale', 'log', 'YScale','log');
-grid
+grid on
 
 %title('Welch Power Spectral Density estimate, all subjects with means')
 

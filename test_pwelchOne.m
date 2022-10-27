@@ -1,0 +1,53 @@
+
+
+group = 'CTRL';
+[pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes(TsubRes.Subject == 'Naty602', : ), group);
+hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
+hs1 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='k' );
+
+
+psdDB = 10*log10(pwelch_mean);
+%psdDB = pwelch_mean;
+%% funkcni
+figurefull;
+plot(psdDB,'k'); hold on;
+
+
+psdDB_L = thresholdbyslopestd(psdDB,50,8,1.8);
+psdDB(psdDB_L) = NaN;
+
+a = fillgapsbylpc(psdDB,5);
+
+plot(a ,'r');
+
+%%
+psdDB = 10*log10(pwelch_mean);
+plot(a ,'r');
+
+%%
+
+
+xs = x2(~x_above_L);
+xs= xs- movmedian( xs , baseline_samples) ;
+xs=xs(2*baseline_samples:end);
+
+plot(xs); hold on;
+
+
+[d,p0] = lpc(xs,baseline_samples);
+u = sqrt(p0)*randn(length(xs),1); 
+y = filter(1,d,u);
+
+plot(y)
+
+
+%%
+
+
+
+
+formatAsPSDplot();
+ylabel('PSD, mV^2/Hz');
+legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
+title('All');
+hold off;

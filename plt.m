@@ -7,12 +7,20 @@ classdef plt
         colorscloud = struct('CTRL', 'k'  , 'TREAT', 'k' );
       
         xticklabelCTRLTREAT = {'Control','FCD'}; %{'Cx','FCD'}; 
+        xticklabelOutvsIn  = {'Outside','Inside'};
+
         labeltimems = 'time, ms';
         labelfreqHz = 'frequency, Hz';
+        labelamplitudemv = 'amplitude, mV';
         labelrateMin = 'rate, event/min.';
 
-        w = 12;
-        h = 12;
+%         w = 12;
+%         h = 12;
+% 
+%         w = 38;
+%         h = 28;
+        w = 34;
+        h = 24;
 
         dpi = 1000;
         formatExt = 'png';
@@ -25,7 +33,7 @@ classdef plt
         loadSignalIED = @(x)loadbin(x, [1,5000] , 'double' );
 
         IedCropPercent = 80;
-        FontSize = 5;
+        FontSize = 11;
 % 
 %         T = struct('Tst_OutVsIn',[], 'Tst_CtrVsTreat',[] );
 % % 
@@ -40,6 +48,10 @@ classdef plt
 %     
     methods (Static)
 
+        function formatSpecial1()
+            ax = gca;
+            ax.Position(3)=ax.Position(3)-0.009;
+        end
 
 
 
