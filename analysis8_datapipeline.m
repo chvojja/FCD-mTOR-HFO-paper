@@ -8,8 +8,8 @@ fs = 5000;
 % testing
 %rmpath('full'); addpath('testing');
 
-% rmpath('testing','full','full_strict');
-% addpath('full_strict');
+rmpath('testing','full','full_strict');
+addpath('full_strict');
 
 %addpath('full');
 %%
@@ -74,6 +74,7 @@ VKJeeg = load2(a.pwd('VKJeeg.mat'));
 % OUT = Tied
 Tied = [];
 % Go through lbl files
+
 [r,c] = size(VKJlbl);
 for i =1:r
      [TiedOneFile, fileInfo] = VKJ_lblFile2table(  FilePath = char(VKJlbl.FilePath(i) )     );  %, 
@@ -102,6 +103,7 @@ cacher = fileCacher( FilePaths = VKJeeg.FilePath, Fun = @VKJ_eegFileLoader );
 
 [r,c] = size(Tied);
 for i = 1:r
+   
      rangeDn = [Tied.StartDn(i)-sec2dn(signalEnlargeEachSide_sec)          Tied.StartDn(i)+sec2dn(signalEnlargeEachSide_sec)   ];
      [s,ChanNames,fs,fileInfo] = cacher.get(  Tied.EEGFilePath(i)   );
      N = size(s,1);
@@ -202,7 +204,8 @@ save7fp = a.pwd('Tied.mat'); save7
 %% By this, we have at least one type of IED detections in Tied and Tiedd in a folder according to a.m object
 % OUT = hfo tables
 %script_analysis_3_HFOs2strict;
-script_analysis_3_HFOs2default;
+%script_analysis_3_HFOs2default;
+analysis_HFOsDetection;
 
 % save7fp = a.pwd('VKJeeg.mat'); save7
 % save7fp = a.pwd('VKJ.mat'); save7
@@ -226,7 +229,8 @@ load(a.pwd('Tied.mat'));% end;
 % Filter by IED type and HFO type
 IEDlabelName = 'dontmiss5000Hz' ; 
 IEDlabelName = 'dontmiss5000Hz' ; 
-IEDlabelName = 'default' ; 
+IEDlabelName = 'default' ;
+IEDlabelName = 'strict5000Hz' ; 
 hfoDetectionName = 'Tiedhfo_default';
 %hfoDetectionName = 'Tiedhfo_strict';
 
@@ -234,9 +238,9 @@ hfoDetectionName = 'Tiedhfo_default';
 %hfoDetectionName = 'TiedhfoDefaultFreqsByStockwell';
 %recomputeFreq_Tiedhfo(Tied, Tiedhfo, hfoDetectionName );  
 %%
-% Create Tiedf
+% Create Tiedf from Tied and Tiedhfo
 
-if exist('Tiedf')
+if exist('Tiedf') % clear old
     clear Tiedf;
 end
 Tiedhfo = load2(a.pwd([hfoDetectionName '.mat'])); 
@@ -271,13 +275,12 @@ Tiedf = leftjoinsorted(Tiedf,Tsublesions,'LeftKeys',{'Subject','ChName'},'RightK
 save7fp = a.pwd('Tiedf'); save7;
 
 % Here we have Tiedf with one particular IED and HFO detection
-
 %%
+
 analysis7_compute_res;
 
 %%
-
-load(a.pwd('Tiedf')); 
+load(a.pwd('Tiedf.mat')); 
 
 load(a.pwd('TsubRes.mat'));
 load(a.pwd('TsubRes_inout.mat'));
@@ -285,6 +288,8 @@ load(a.pwd('TsubRes_inout.mat'));
 load(a.pwd('Tplt_CtrlVsTreat.mat'));
 load(a.pwd('Tplt_OutVsIn.mat')); 
 load(a.pwd('stats')); 
+
+%%
 
 % psdDB_L = thresholdbyslopestd(pxxwelch,50,8,1.8);
 % pxxwelch(psdDB_L) = NaN;

@@ -132,7 +132,6 @@ adjusted_freq_domain = ifftshift(windowed_freq_domain_shifted);
 im_2 = ifft2(adjusted_freq_domain);
 y = im_2;
 
-
 end
 
 

@@ -25,7 +25,7 @@ classdef a < Analyzer %& JancaSpike %& Verboser
         % Keep only first 2 files and all label files
         Teeg = TfilesOneSub( TfilesOneSub.Type =='eeg' & TfilesOneSub.SubFold1 == '5000HZ' , :); 
         Tlbl = TfilesOneSub( TfilesOneSub.Type =='lbl' & TfilesOneSub.SubFold1 == a.labelFolder, : ); 
-        T = [Teeg( 1:10 ,:); Tlbl];
+        T = [Teeg( 1:3 ,:); Tlbl];
     end
 
     function T = labelfilter(TallDetectionsOneLblFile)

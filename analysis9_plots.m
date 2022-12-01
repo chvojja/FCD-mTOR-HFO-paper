@@ -3,7 +3,7 @@
 % Tiedf = Tiedf(selectedIdx,:);
 
 fs = 5000;
-linewidth = 1.2;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3 - IED plots
@@ -32,12 +32,12 @@ ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = crop
 % iedsems = TpltSig_CtrlVsTreat.iedsems( selectL );
 
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth', plt.LineWidthBox ); 
 
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'CTRL', :)    ,   Tiedf( Tiedf.InLesion == false , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth', plt.LineWidthBox ); 
 
 xlabel(plt.labeltimems);
 ylabel(plt.labelamplitudemv);
@@ -51,12 +51,12 @@ axes(sp(2));
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.InLesion == true , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot( 1000*s2t(ied,fs) , ied,'r','LineWidth',linewidth); 
+hp1 = plot( 1000*s2t(ied,fs) , ied,'r','LineWidth', plt.LineWidthBox ); 
 
 [ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.InLesion == false , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot( 1000*s2t(ied,fs), ied,'k','LineWidth',linewidth); 
+hp2 = plot( 1000*s2t(ied,fs), ied,'k','LineWidth', plt.LineWidthBox  ); 
 
 xlabel(plt.labeltimems);
 ylabel(plt.labelamplitudemv);
@@ -85,9 +85,10 @@ ylabel(plt.labelrateMin);
 
 %resize2tight();
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
+if plt.savefigs_b
 savefig( a.pwd([ ' Fig3.fig']) );
 printpaper(  a.pwd([ ' Fig3.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
+end
 
 %% Fig 4 
 % T = TsubRes;
@@ -116,7 +117,7 @@ drawnow;
 resize2cm(plt.w,plt.h);
 
 
-lw = 1;
+lw = plt.LineWidthBox ;
 
 % PSD plots
 axes(sp(1)); % Mean PSDs
@@ -127,11 +128,22 @@ group = 'CTRL';
 hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
 hs1 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='k' );
 %set(gca, 'XScale', 'log', 'YScale','log');
+% for diff graph
+pwelch_mean_CTRL = pwelch_mean;
+pwelch_sems_CTRL = pwelch_sems;
 
 group = 'TREAT';
 [pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
 hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw ); hold on;
 hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
+% for diff graph
+pwelch_mean_TREAT = pwelch_mean;
+pwelch_sems_TREAT = pwelch_sems;
+
+% % for diff graph
+% pwelch_mean_diff = pwelch_mean_TREAT-pwelch_mean_CTRL;
+% pwelch_sems_diff = sqrt(pwelch_sems_TREAT.^2 + pwelch_sems_CTRL.^2 );
+
 
 formatAsPSDplot();
 ylabel('PSD, mV^2/Hz');
@@ -230,7 +242,7 @@ percentsEachAnimal = 100*[countsOnlyIEDsNoRsNoFRs countsOnlyRs countsOnlyFRs  co
 yyaxis left
 barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
 barsData(:,2:end) = NaN;
-hbcounts1=boxchart( barsData ,'BoxFaceColor','k','LineWidth',1.2);
+hbcounts1=boxchart( barsData ,'BoxFaceColor','k','LineWidth',plt.LineWidthBox);
 ax= gca; ax.YAxis(1).Color= favouritecolors('epipink');
 hbcounts1(1).BoxFaceColor = favouritecolors('epipink');
 ylabel('IED, %');
@@ -238,7 +250,7 @@ ylabel('IED, %');
 yyaxis right
 barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
 barsData(:,1) = NaN;
-hbcounts2=boxchart( barsData ,'BoxFaceColor','k','LineWidth',1.2);
+hbcounts2=boxchart( barsData ,'BoxFaceColor','k','LineWidth',plt.LineWidthBox);
 hbcounts2(1).MarkerColor = [0 0 0];
 ax= gca; ax.YAxis(2).Color= favouritecolors('halflife');
 hbcounts2(1).BoxFaceColor = favouritecolors('halflife');
@@ -248,10 +260,56 @@ NdetTypes = numel( labelsDetTypes );
 set(gca,'xticklabel', [labelsDetTypes([1 2 4 ])  { 'FR+R' 'R/FR' } ] );
 
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
-
+if plt.savefigs_b
 savefig( a.pwd([ ' Fig4.fig']) );
 printpaper(  a.pwd([ ' Fig4.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+end
 
+%%
+% difference or ratio plot
+
+
+figurefull;
+sp(1) = subplot(2,6,[1 2]);  % This has to be drawn first to be able to draw significant line exactly :((
+ sp(2) = subplot(2,6,[3 4]); plot([0 1],[0 1]);
+% sp(3) = subplot(2,6,[5 6]);
+% sp(4) = subplot(2,6,[7 8]);
+% sp(5) = subplot(2,6,[9 10 11 12]);
+% pause(0.5);
+drawnow;
+resize2cm(plt.w,plt.h);
+
+lw = plt.LineWidthBox ;
+
+% PSD plot diff
+axes(sp(1)); % Mean PSDs
+plt.formatSpecial1;
+
+%pwelch_mean_diff = abs(pwelch_mean_diff);
+% 
+
+pwelch_ratio_mean=(pwelch_mean_TREAT./pwelch_mean_CTRL);
+pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL).^2 );
+% pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL)^2  - 2*    );
+
+
+
+% |A/B| * sqrt( (sA/A) ² + (sB/B)² )
+
+hp_d = plot(pwelch_f+1,pwelch_ratio_mean,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
+% hp_d = plot(pwelch_f+1,pwelch_mean_diff,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
+% hs_d= confidenceshade( pwelch_f+1 , abs( pwelch_mean_diff - pwelch_sems_diff ) , abs( pwelch_mean_diff + pwelch_sems_diff ), Color='k' );
+hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem  ,  pwelch_ratio_mean + pwelch_ratio_sem , Color='k' );
+
+ set(gca, 'XScale', 'log', 'YScale','log');
+%set(gca,'YScale','log');
+%grid on
+% ylim([10^-9 10^-2]);
+ ylim([0 4]);
+ xlim([1 2*10^3]);
+xlabel('Frequency, Hz');
+
+ylabel('PSD FCD/CTRL ratio [-]');
 
 
 %% Fig 5 Ripples
@@ -276,14 +334,18 @@ resize2cm(plt.w,plt.h);
 axes(sp(1));
 
 %[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.HasR == true , : )    ) ;
+ied = stats.meanIEDshapes.withRipple.ied;
+iedsems = stats.meanIEDshapes.withRipple.iedsems;
 ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',plt.LineWidthThicker); 
 
+ied = stats.meanIEDshapes.noRipple.ied;
+iedsems = stats.meanIEDshapes.noRipple.iedsems;
 %[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasR == false , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',plt.LineWidthThicker); 
 
 xlabel(plt.labeltimems)
 ylabel('amplitude, mV');
@@ -295,18 +357,21 @@ labels =[];
 feature = 'rateR_min';
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(plt.labelrateMin);
-set(gca,'YLim',[-0.2 1.3]);
+%set(gca,'YLim', plt.YLimRippleRate );
+ylimfromzero();
 
 axes(sp(3));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelrateMin);
-set(gca,'YLim',[-0.2 1.3]);
+%set(gca,'YLim', plt.YLimRippleRate);
+ylimfromzero();
 %set(gca,'YTick', []);
 
 axes(sp(4));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelrateMin);
-set(gca,'YLim',[-0.2 1.3]);
+%set(gca,'YLim', plt.YLimRippleRate );
+ylimfromzero();
 %set(gca,'YTick', []);
 
 
@@ -314,41 +379,41 @@ axes(sp(5));
 feature = 'Rfreq';
 [hs] = plotSwarm_CXvsTREAT(Tiedf,feature);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[30 150]);
+set(gca,'YLim', plt.YLimRippleFreq );
 
 axes(sp(6));
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[30 150]);
+set(gca,'YLim',  plt.YLimRippleFreq  );
 
 axes(sp(7));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[30 150]);
+set(gca,'YLim',  plt.YLimRippleFreq  );
 %set(gca,'YTick', []);
 
 axes(sp(8));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[30 150]);
+set(gca,'YLim',  plt.YLimRippleFreq  );
 %set(gca,'YTick', []);
 
 
 feature = 'RtoIEDrateShare';
-feature = 'RinIEDs';
+%feature = 'RinIEDs';
 
 axes(sp(9));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel('R/IED rate share, %');
+ylimfromzero();
 
 axes(sp(10));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel('R/IED rate share, %');
-
+ylimfromzero();
 
 % R plot histogram of oscillations
 feature = 'RpeaksCount';
-
 axes(sp(11));
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == true, :);
 plotHistCount(Tplot ,feature);
@@ -359,14 +424,17 @@ title('Inside');
 axes(sp(12));
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
 plotHistCount(Tplot ,feature);
+ylabel('share, %');
 title('Outside');
 
 
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
-
+%%
+if plt.savefigs_b
 savefig( a.pwd([ ' Fig5.fig']) );
-printpaper(  a.pwd([ ' Fig5.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 
+printpaper(  a.pwd([ ' Fig5.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+end
 
 %% Fig 6 Fast ripples
 figurefull;
@@ -389,15 +457,19 @@ resize2cm(plt.w,plt.h);
 
 axes(sp(1));
 
+ied = stats.meanIEDshapes.withFRipple.ied;
+iedsems = stats.meanIEDshapes.withFRipple.iedsems;
 %[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT' , :)    ,   Tiedf( Tiedf.HasFR == true , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent = plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'r' ); hold on; 
-hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',linewidth); 
+hp1 = plot( 1000*s2t(ied,fs),ied,'r','LineWidth',plt.LineWidthThicker); 
 
+ied = stats.meanIEDshapes.noFRipple.ied;
+iedsems = stats.meanIEDshapes.noFRipple.iedsems;
 %[ied, iedsems] =  getIEDmeansems(    TsubRes( TsubRes.Role == 'TREAT', :)    ,   Tiedf( Tiedf.HasFR == false , : )    ) ;
 ied = cropfill( Signal = ied, CropPercent =  plt.IedCropPercent ); iedsems = cropfill( Signal = iedsems, CropPercent =  plt.IedCropPercent );
 confidenceshade( 1000*s2t(ied,fs) , ied-iedsems , ied+iedsems, Color = 'k' ); hold on; 
-hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',linewidth); 
+hp2 = plot( 1000*s2t(ied,fs),ied,'k','LineWidth',plt.LineWidthThicker); 
 
 xlabel(plt.labeltimems)
 ylabel('amplitude, mV');
@@ -405,17 +477,18 @@ legend([hp1 hp2],'IED+FR', 'IED-FR', 'Location','southwest');
 title('Mean IED w/wo FR');
 
 
-
 axes(sp(2));
 feature = 'rateFR_min';
 
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(plt.labelrateMin);
+ylimfromzero();
 %set(gca,'YLim',[-0.2 1.2]);
 
 axes(sp(3));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelrateMin);
+ylimfromzero();
 %set(gca,'YLim',[-0.2 1.2]);
 %set(gca,'YTick', []);
 
@@ -423,6 +496,7 @@ ylabel(plt.labelrateMin);
 axes(sp(4));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelrateMin);
+ylimfromzero();
 %set(gca,'YLim',[-0.2 1.6]);
 %set(gca,'YTick', []);
 
@@ -431,37 +505,38 @@ axes(sp(5));
 feature = 'FRfreq';
 [hs] = plotSwarm_CXvsTREAT(Tiedf,feature);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[200 700]);
+set(gca,'YLim', plt.YLimFRippleFreq );
 
 
 axes(sp(6));
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[350 750]);
+set(gca,'YLim', plt.YLimFRippleFreq );
 
 axes(sp(7));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[350 750]);
+set(gca,'YLim', plt.YLimFRippleFreq );
 %set(gca,'YTick', []);
 
 axes(sp(8));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel(plt.labelfreqHz);
-set(gca,'YLim',[350 750]);
+set(gca,'YLim', plt.YLimFRippleFreq );
 %set(gca,'YTick', []);
 
 labels =[];
 feature = 'FRtoIEDrateShare';
-feature = 'FRinRFRs';
+%feature = 'FRinRFRs';
 
 axes(sp(9));
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 ylabel('FR/IED rate share, %');
+ylimfromzero();
 
 axes(sp(10));
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
-
+ylimfromzero();
 
 % FR plot histogram of oscillations
 feature = 'FRpeaksCount';
@@ -476,15 +551,16 @@ title('Inside');
 axes(sp(12));
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
 plotHistCount(Tplot ,feature);
+ylabel('share, %');
 title('Outside');
 
-
+%%
 
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
-
+if plt.savefigs_b
 savefig( a.pwd([ ' Fig6.fig']) );
 printpaper(  a.pwd([ ' Fig6.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-
+end
 
 
 
@@ -494,71 +570,73 @@ hold on
 peakcounts =  cell2mat(  TwithPeakCounts.(feature)  );
 meanIED = sum(cell2mat(TwithPeakCounts.meanIED),1);
 
-NbinsOnseSide = 10;
-NsOneBin = 10;
-fs = 5000;
-
-peakcountsBinedProbabilityPerSubjC = cell(size(peakcounts,1),1);
-for i = 1: size(peakcounts,1)
-    %[c,b,Nb,sI,eI] = binPeakCounts(peakcounts_subjects(i,:),NbinsOnseSide); [counts,groups_bins,Nb] = binPeakCounts(peakcounts,NbinsOnseSide)
-    Nframe = 5000;
-    NOneSide = NsOneBin * NbinsOnseSide;
-    sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
-    peakCountsCropped = peakcounts(i, sI : eI );
-    groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
-    counts = splitapply(@sum,peakCountsCropped,groups_bins);
+if ~isempty(peakcounts)
+    NbinsOnseSide = 6;
+    NsOneBin = 20;
+    fs = 5000;
+    
+    peakcountsBinedProbabilityPerSubjC = cell(size(peakcounts,1),1);
+    for i = 1: size(peakcounts,1)
+        %[c,b,Nb,sI,eI] = binPeakCounts(peakcounts_subjects(i,:),NbinsOnseSide); [counts,groups_bins,Nb] = binPeakCounts(peakcounts,NbinsOnseSide)
+        Nframe = 5000;
+        NOneSide = NsOneBin * NbinsOnseSide;
+        sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
+        peakCountsCropped = peakcounts(i, sI : eI );
+        groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
+        counts = splitapply(@sum,peakCountsCropped,groups_bins);
+        Nb=eI-sI+1;
+    
+        peakcountsBinedProbabilityPerSubjC{i} = 100*counts/sum(counts);
+    end
+    
+    peakcountsBinedProbabilityPerSubj=cell2mat(peakcountsBinedProbabilityPerSubjC);
+    means = nanmean(peakcountsBinedProbabilityPerSubj);
+    sems = nansem( peakcountsBinedProbabilityPerSubj );
+    
+    % rescale meanIED
+    meanIED = meanIED - max(meanIED);
+    meanIED = meanIED * max(means);
+    % plot
+    
+    h1 = plot(1000*s2t(meanIED(sI:eI),fs),meanIED(sI:eI)-2,'Color','k'); hold on;
+    xlabel(plt.labeltimems);
     Nb=eI-sI+1;
-
-    peakcountsBinedProbabilityPerSubjC{i} = 100*counts/sum(counts);
+    
+    maxTime = max(get(gca,'XLim'));
+    bar(  linspace(0,maxTime,NbinsOnseSide*2)    ,    means ,'k')  %max(ied_avg)
+    
+    
+    er = errorbar( linspace(0,maxTime,NbinsOnseSide*2) ,  means  ,sems,sems);    
+    %er.Color = [0 0 0];    
+    %er.LineStyle = 'none'; 
+    [er(:).Color] = deal([0 0 0 ]);
+    [er(:).LineStyle] = deal('none');
+    
+    
+    box on
+    set(gca,'YLim', [min(meanIED) max(means+sems)]);
+    ylimoptimal(PercentMargin = 0.05);
+    
+    yt = get(gca,'yticklabels');
+    ytNum = cellstr2num(yt);
+    yt(ytNum<0)={' '};
+    set(gca,'yticklabels',yt);
 end
-
-
-
-peakcountsBinedProbabilityPerSubj=cell2mat(peakcountsBinedProbabilityPerSubjC);
-means = nanmean(peakcountsBinedProbabilityPerSubj);
-sems = nansem( peakcountsBinedProbabilityPerSubj );
-
-% rescale meanIED
-meanIED = meanIED - max(meanIED);
-meanIED = meanIED * max(means);
-% plot
-
-h1 = plot(s2t(meanIED(sI:eI),fs),meanIED(sI:eI)-2,'Color','k'); hold on;
-xlabel(plt.labeltimems);
-Nb=eI-sI+1;
-
-maxTime = max(get(gca,'XLim'));
-bar(  linspace(0,maxTime,NbinsOnseSide*2)    ,    means ,'k')  %max(ied_avg)
-
-
-er = errorbar( linspace(0,maxTime,NbinsOnseSide*2) ,  means  ,sems,sems);    
-er.Color = [0 0 0];                            
-er.LineStyle = 'none';  
-
-box on
-set(gca,'YLim', [min(meanIED) max(means+sems)]);
-ylimoptimal(PercentMargin = 0.05);
-
-yt = get(gca,'yticklabels');
-ytNum = cellstr2num(yt);
-yt(ytNum<0)={' '};
-set(gca,'yticklabels',yt);
-
 
 end
 
 
 
-function [counts,groups_bins,Nb] = binPeakCounts(peakcounts,NbinsOnseSide)
-
-Nframe = 5000;
-NOneSide = NsOneBin * NbinsOnseSide;
-sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
-peakCountsCropped = peakcounts( sI : eI );
-groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
-counts = splitapply(@sum,peakCountsCropped,groups_bins);
-Nb=eI-sI+1;
-end
+% function [counts,groups_bins,Nb] = binPeakCounts(peakcounts,NbinsOnseSide)
+% 
+% Nframe = 5000;
+% NOneSide = NsOneBin * NbinsOnseSide;
+% sI = Nframe/2 -NOneSide; eI = Nframe/2 + NOneSide  -1;
+% peakCountsCropped = peakcounts( sI : eI );
+% groups_bins = repelem(1:2*NbinsOnseSide,NsOneBin);
+% counts = splitapply(@sum,peakCountsCropped,groups_bins);
+% Nb=eI-sI+1;
+% end
 
 
 function [hs] = plotSwarm_CXvsTREAT(Tiedf,feature)
@@ -589,8 +667,9 @@ d = 0.2;
 Tplot = Tsub(:,{'Subject','Role',feature});
 Tplot.Role = cat2num(Tplot.Role,'CTRL',1+d,'TREAT',2+d);
 
-hb2=boxchart(Tplot.Role,Tplot.(feature),'BoxFaceColor','k','LineWidth',1.2); hold on;
+hb2=boxchart(Tplot.Role,Tplot.(feature),'BoxFaceColor','k','LineWidth',plt.LineWidthBox); hold on;
 hb2.BoxWidth = 2*d;
+hb2.MarkerColor = [0 0 0];
 
 % now lets add jitter
 Tplot.Role = Tplot.Role -2*d;
@@ -652,7 +731,7 @@ Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLe
 Tplot.InLesion = categorical(Tplot.InLesion);
 Tplot.InLesion = cat2num(Tplot.InLesion,'false',1,'true',2);
 
-h=boxchart(Tplot.InLesion,Tplot.(feature),'BoxFaceColor','k','LineWidth',1.2);
+h=boxchart(Tplot.InLesion,Tplot.(feature),'BoxFaceColor','k','LineWidth',plt.LineWidthBox);
 h(1).MarkerColor = [0 0 0];
 
 box on
