@@ -65,13 +65,34 @@ row_heights = [4 4 4];
 
 h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05 0.05], [0.1 0.05], [0.1 0.05]);
 h_subplot = @(m,n,p) subtightplot (m, n, p, [0.0 0.0], [0.0 0.0], [0.0 0.00]);
+h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05 0.05], [0.05 0.05], [0.05 0.05]);
+h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05 0.05], [0.05 0.05], [0.062 0.062]);
+
+% na prvni dobrou
+h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05658 0.0565], [0.081 0.051], [0.0998 0.0293]);
 
 %ax_layout.
 [hax] = layoutaxesrows(h_subplot,row_heights,row_widths_3columns,row_widths_3columns,third_row_tile_widths);
-axis(hax(1:7),'square');
+%axis(hax(1:7),'square');
 
 drawnow;
-resize2cm(9.5,10.5); % paper size on figure but axes are still on auto mode
+
+% Position to centimeters
+resize2cm(9.5,11.1); % paper size on figure but axes are still on auto mode
+previous_units_C = axesunits(hax,'centimeters');
+resizeaxes_center(hax(1:7),[plt.w_square_boxplot plt.w_square_boxplot]);
+width_oversizeIEDtrace = 1.04*plt.w_square_boxplot;
+resizeaxes_topright(hax(1),[width_oversizeIEDtrace width_oversizeIEDtrace]);
+
+width_3boxplots = 1.243*plt.w_square_boxplot;
+resizeaxes_bottomright(hax(8),[width_3boxplots/3 plt.w_square_boxplot]);
+resizeaxes_bottomright(hax(9),[width_3boxplots plt.w_square_boxplot]);
+
+hax(7).InnerPosition(2)=hax(8).InnerPosition(2); % snap Pie to bottom
+hax(8).InnerPosition(1)=hax(8).InnerPosition(1)-0.2; % move middle bottom to the left
+
+axesunits(hax,previous_units_C);
+
 
 %----------------------------Plotting of individual axes----------------------------
 % IED traces
@@ -81,18 +102,10 @@ plot_averaged_IEDs(TsubRes,Tiedf);
 % Boxplots
 axes(hax(2)); hold on;
 plot_IEDrate_Cx_Treat( TsubRes, Tplt_CtrlVsTreat);
-ha =gca;
-backupUnits = ha.Units;
-ha.Units= 'centimeters';
-size_a = 2.36;
-wh_cm = [size_a size_a];
-lb_adjust = (ha.InnerPosition(3:4)-wh_cm)/2;
-ha.InnerPosition(1:2) = ha.InnerPosition(1:2) + lb_adjust;
-ha.InnerPosition(3:4) = wh_cm;
-ha.Units = backupUnits;
 
 axes(hax(3)); hold on;
 plot_IEDrate_In_vs_Out(TsubRes_inout, Tplt_OutVsIn);
+
 
 % Pwelchs
 %plt.formatSpecial1;
@@ -105,7 +118,6 @@ axes(hax(5)); hold on;
 
 axes(hax(6)); hold on;
 plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL);
-% 
 
 % Pie and small boxes
 axes(hax(7)); hold on;
@@ -120,7 +132,8 @@ ylabel('IEDs w/o HFO (%)');
 hax(8).YLim = [80 100];
 hax(8).YTick = [80 85 90 95 100];
 %hax(8).YTickLabel=num2cellstr(hax(8).YTick);
-format_axes(hax(8));
+%format_axes(hax(8));
+%zoomaxes2cm(1.8,plt.w_square_boxplot);
 
 axes(hax(9)); hold on; 
 hb=boxchart( stats.percents_IEDsWithHFO);
@@ -129,9 +142,13 @@ xticklabels({'GR','FR','FR+GR'});
 ylabel('IEDs w/o HFO (%)');
 hax(9).YLim = [0 15];
 hax(9).YTick = [0 5 10 15];
-format_axes(hax(9));
+%format_axes(hax(9));
 
-%resize2tight();
+%
+axesfun(hax,@format_axes);
+
+
+
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
 if plt.savefigs_b
 savefig( a.pwd(['Fig3.fig']) );
@@ -311,7 +328,7 @@ title('Averaged detection');
 hax.XAxis.Visible = false;
 hax.YAxis.Visible = false;
 
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -331,7 +348,7 @@ hax = gca;
 feature = 'rateIED_min';
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
 title('Detection rate');
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -366,7 +383,7 @@ hax.YTick = [10^-8 10^-6 10^-4 10^-2];
 ylabel(plt.labelpsd);
 %legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
 title('PSD in FCD/controls');
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -399,7 +416,7 @@ hax.YTick = [10^-8 10^-6 10^-4 10^-2];
 %ylabel(plt.labelpsd);
 %legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
 title('Averaged PSD');
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -433,7 +450,7 @@ hax.XTick =[1 10 100 1000];
 
 %ylabel(plt.labelpsdratio);
 title('PSDs comparison');
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -461,7 +478,7 @@ title('IEDs and HFOs');
 hax.XAxis.Visible = false;
 hax.YAxis.Visible = false;
 
-format_axes(hax);
+%format_axes(hax);
 squareaxis(hax);
 end
 
@@ -470,10 +487,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function format_axes(hax)
-
+arguments 
+    hax = gca;
+end
 hax.FontSize = plt.FontSize; % premeks favourite
 hax.LabelFontSizeMultiplier = 1; % prevent font size from changing
 
+% Line width
+setall('LineWidth',0.4);
 
 % Title format
 hax.Title.FontSize=plt.FontSize;
@@ -497,5 +518,6 @@ hax.XTickLabelRotationMode="manual";
 hax.XTickLabelRotation=0;
 
 trueblackaxis(hax);
+scientificfontcompact;
 
 end

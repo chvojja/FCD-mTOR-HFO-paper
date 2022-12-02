@@ -43,6 +43,8 @@ classdef plt
         w = 9.5;
         h = 10.5;
 
+        w_square_boxplot = 2.36;
+
         dpi = 1000;
         formatExt = 'png';
         closeFigs = true;
