@@ -9,9 +9,9 @@ fs = 5000;
 %rmpath('full'); addpath('testing');
 
 rmpath('testing','full','full_strict');
-addpath('full_strict');
+%addpath('full_strict');
+addpath('full');
 
-%addpath('full');
 %%
 script_analysis_0_cohort;
 % in order to not fetch for subjects again and again
@@ -228,10 +228,10 @@ load(a.pwd('Tied.mat'));% end;
 
 % Filter by IED type and HFO type
 IEDlabelName = 'dontmiss5000Hz' ; 
-IEDlabelName = 'dontmiss5000Hz' ; 
 IEDlabelName = 'default' ;
-IEDlabelName = 'strict5000Hz' ; 
 hfoDetectionName = 'Tiedhfo_default';
+
+%IEDlabelName = 'strict5000Hz' ; 
 %hfoDetectionName = 'Tiedhfo_strict';
 
 
@@ -287,7 +287,7 @@ load(a.pwd('TsubRes_inout.mat'));
 
 load(a.pwd('Tplt_CtrlVsTreat.mat'));
 load(a.pwd('Tplt_OutVsIn.mat')); 
-load(a.pwd('stats')); 
+load(a.pwd('stats.mat')); 
 
 %%
 

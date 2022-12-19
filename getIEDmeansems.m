@@ -1,6 +1,7 @@
 function [ied, iedsems ] =  getIEDmeansems(TsubRes,Tiedf)
 % This function is usefull as well because the meanIEDs in TsubRes are computed from all IEDs. 
 % This function allows more refined grouping according to modified Tiedf
+% it computes also sems
 
 subjects = TsubRes.Subject; % treatments
 Nsubj = numel(subjects);

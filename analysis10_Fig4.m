@@ -52,7 +52,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Fig 3. IEDs and PSD plots
+%% Fig 4. IEDs and PSD plots
 %----------------------------Prepare window----------------------------
 figurefull;
 % tiledlayout definition
@@ -71,28 +71,27 @@ h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05 0.05], [0.05 0.05], [0.062 0.0
 % na prvni dobrou
 h_subplot = @(m,n,p) subtightplot (m, n, p, [0.05658 0.0565], [0.081 0.051], [0.0998 0.0293]);
 
-%ax_layout.
+%ax_layout
 [hax] = layoutaxesrows(h_subplot,row_heights,row_widths_3columns,row_widths_3columns,third_row_tile_widths);
 %axis(hax(1:7),'square');
-
+%
 drawnow;
-
-% Position to centimeters
-resize2cm(9.5,11.1); % paper size on figure but axes are still on auto mode
+%--------------------------Position to centimeters--------------------------
+resize2cm(9.5,11.2); % paper size on figure but axes are still on auto mode
 previous_units_C = axesunits(hax,'centimeters');
 resizeaxes_center(hax(1:7),[plt.w_square_boxplot plt.w_square_boxplot]);
-width_oversizeIEDtrace = 1.04*plt.w_square_boxplot;
+width_oversizeIEDtrace = 1.05*plt.w_square_boxplot;
 resizeaxes_topright(hax(1),[width_oversizeIEDtrace width_oversizeIEDtrace]);
 
 width_3boxplots = 1.243*plt.w_square_boxplot;
-resizeaxes_bottomright(hax(8),[width_3boxplots/3 plt.w_square_boxplot]);
+resizeaxes_bottomright(hax(8),[width_3boxplots/2.8 plt.w_square_boxplot]);
 resizeaxes_bottomright(hax(9),[width_3boxplots plt.w_square_boxplot]);
 
 hax(7).InnerPosition(2)=hax(8).InnerPosition(2); % snap Pie to bottom
 hax(8).InnerPosition(1)=hax(8).InnerPosition(1)-0.2; % move middle bottom to the left
-
+hax(1).InnerPosition(1)=hax(1).InnerPosition(1)-0.12; % move first axes  to the left
 axesunits(hax,previous_units_C);
-
+%pieAxisPosition = get(pieAxis, 'Position');
 
 %----------------------------Plotting of individual axes----------------------------
 % IED traces
@@ -119,36 +118,42 @@ axes(hax(5)); hold on;
 axes(hax(6)); hold on;
 plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL);
 
+
 % Pie and small boxes
 axes(hax(7)); hold on;
 plot_pieIEDs(stats.pieData);
 
+
 axes(hax(8)); hold on; 
-hb=boxchart([1 1 1 1 1 1 1 1 ], stats.percents_IEDsNoHFO );
+% hb=boxchart([1 1 1 1 1 1 1 1 ], stats.percents_IEDsNoHFO );
+hb=boxchart(stats.percents_IEDsNoHFO );
 format_boxchart(hb);
 xticklabels('IED');
 ylabel('IEDs w/o HFO (%)');
+% hax(8).YLim = [80 100];
+% hax(8).YTick = [80 85 90 95 100];
+hax(8).YLim = [90 100];
+hax(8).YTick = [90 92 94 96 98 100];
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
-hax(8).YLim = [80 100];
-hax(8).YTick = [80 85 90 95 100];
-%hax(8).YTickLabel=num2cellstr(hax(8).YTick);
-%format_axes(hax(8));
-%zoomaxes2cm(1.8,plt.w_square_boxplot);
 
 axes(hax(9)); hold on; 
 hb=boxchart( stats.percents_IEDsWithHFO);
 format_boxchart(hb);
 xticklabels({'GR','FR','FR+GR'});
-ylabel('IEDs w/o HFO (%)');
-hax(9).YLim = [0 15];
-hax(9).YTick = [0 5 10 15];
-%format_axes(hax(9));
+ylabel('IEDs with HFO (%)');
+% hax(9).YLim = [0 15];
+% hax(9).YTick = [0 5 10 15];
+a.set_yprops(hax(9),'IEDsWithHFOs'); 
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
+%format_axes(hax(9));
+%
 %
 axesfun(hax,@format_axes);
 
 
-
+%%
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
 if plt.savefigs_b
 savefig( a.pwd(['Fig3.fig']) );
@@ -157,107 +162,107 @@ end
 
 
 %%
-
-% counts as boxplots per count type;
-
-
-% only treatment animals
-% Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLesion',feature}); 
-Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLesion'}); 
-Tplot.InLesion = categorical(Tplot.InLesion);
-Tplot.InLesion = cat2num(Tplot.InLesion,'false',2,'true',1);
-
-percentsEachAnimal = 100*[countsOnlyIEDsNoRsNoFRs countsOnlyRs countsOnlyFRs  countsOnlyRFRs ]./T.Nieds;
- 
-yyaxis left
-barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
-barsData(:,2:end) = NaN;
-
-hb=boxchart( stats.percents_IEDsNoHFO );
-format_boxchart(hb);
-
-ax= gca; ax.YAxis(1).Color= favouritecolors('epipink');
-hbcounts1(1).BoxFaceColor = favouritecolors('epipink');
-ylabel('IED, %');
-
-yyaxis right
-barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
-barsData(:,1) = NaN;
-hbcounts2=boxchart( barsData ,'BoxFaceColor','k','LineWidth',plt.LineWidthBox);
-hbcounts2(1).MarkerColor = [0 0 0];
-ax= gca; ax.YAxis(2).Color= favouritecolors('halflife');
-hbcounts2(1).BoxFaceColor = favouritecolors('halflife');
-ylabel('HFO, %');
-
-NdetTypes = numel( labelsDetTypes );
-set(gca,'xticklabel', [labelsDetTypes([1 2 4 ])  { 'FR+R' 'R/FR' } ] );
-
-%%
-
-
-
-
-
-%setall('LineWidth',0.5,'FontSize',plt.FontSize);
-if plt.savefigs_b
-savefig( a.pwd([ ' Fig4.fig']) );
-printpaper(  a.pwd([ ' Fig4.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
-end
-
-
+% 
+% % counts as boxplots per count type;
+% 
+% 
+% % only treatment animals
+% % Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLesion',feature}); 
+% Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLesion'}); 
+% Tplot.InLesion = categorical(Tplot.InLesion);
+% Tplot.InLesion = cat2num(Tplot.InLesion,'false',2,'true',1);
+% 
+% percentsEachAnimal = 100*[countsOnlyIEDsNoRsNoFRs countsOnlyRs countsOnlyFRs  countsOnlyRFRs ]./T.Nieds;
+%  
+% yyaxis left
+% barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
+% barsData(:,2:end) = NaN;
+% 
+% hb=boxchart( stats.percents_IEDsNoHFO );
+% format_boxchart(hb);
+% 
+% ax= gca; ax.YAxis(1).Color= favouritecolors('epipink');
+% hbcounts1(1).BoxFaceColor = favouritecolors('epipink');
+% ylabel('IED, %');
+% 
+% yyaxis right
+% barsData = [percentsEachAnimal(:,1:end) 100*countsOnlyRFRs./(countsOnlyRFRs+countsOnlyFRs) ];
+% barsData(:,1) = NaN;
+% hbcounts2=boxchart( barsData ,'BoxFaceColor','k','LineWidth',plt.LineWidthBox);
+% hbcounts2(1).MarkerColor = [0 0 0];
+% ax= gca; ax.YAxis(2).Color= favouritecolors('halflife');
+% hbcounts2(1).BoxFaceColor = favouritecolors('halflife');
+% ylabel('HFO, %');
+% 
+% NdetTypes = numel( labelsDetTypes );
+% set(gca,'xticklabel', [labelsDetTypes([1 2 4 ])  { 'FR+R' 'R/FR' } ] );
+% 
+% %%
+% 
+% 
+% 
+% 
+% 
+% %setall('LineWidth',0.5,'FontSize',plt.FontSize);
+% if plt.savefigs_b
+% savefig( a.pwd([ ' Fig4.fig']) );
+% printpaper(  a.pwd([ ' Fig4.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+% end
 
 
-function [haxes] = layoutaxesrows(h_subplot,row_heights,row_widths)
-arguments
-    h_subplot
-    row_heights;
-end
-arguments (Repeating)
-    row_widths;
-end
-Nc = numel(row_widths);
-Nr = length(row_heights);
-if Nc==Nr
-   total_height = sum( row_heights );
-   for i =1:Nr, widths(i) = sum(row_widths{i}); end
-   total_width = max(widths);
 
-   ind_map = reshape(1:(total_height*total_width),total_height,total_width);
-
-   Ntiles = numel(cell2mat(row_widths));
-  % starts_col = [1 1+cumsum(row_widths(1:end-1))];
-   starts_row = [1 1+cumsum(row_heights(1:end-1))];
-   i =1;
-   for r =1:Nr
-        rws = row_widths{r};
-        starts_col = [1 1+cumsum(rws(1:end-1))];
-
-        Nc_current = length(rws);
-        for c = 1:Nc_current
-            tile_dims(1)=row_heights(r);
-            tile_dims(2)=rws(c);
-
-            %hax = nexttile(tile_dims);
-           % hax = subaxis(total_height,total_width,starts_row(r),starts_col(c),row_heights(r),rws(c)); 
-         % hax = subaxis(total_height,total_width,starts_col(c),starts_row(r),rws(c),row_heights(r));
-         inds = ind_map( starts_col(c):(starts_col(c)+rws(c)-1) , starts_row(r):(starts_row(r)+row_heights(r)-1)  );
-         %hax = subplot(total_height,total_width,inds(:));
-         hax = h_subplot(total_height,total_width,inds(:));
-
-         %  hax = subplot_er(total_height,total_width,starts_col(c),starts_row(r),rws(c),row_heights(r));  
-            %varargout{i}=hax;
-            haxes(i)=hax;
-            i = i+1;
-            
-%             [X,Y,Z] = peaks(20);
-%             surf(X,Y,Z);     
-        end
-   end 
-else
-    disp('Arguments not in pairs');
-   haxes = [];
-end
-end
+% the good one
+% function [haxes] = layoutaxesrows(h_subplot,row_heights,row_widths)
+% arguments
+%     h_subplot
+%     row_heights;
+% end
+% arguments (Repeating)
+%     row_widths;
+% end
+% Nc = numel(row_widths);
+% Nr = length(row_heights);
+% if Nc==Nr
+%    total_height = sum( row_heights );
+%    for i =1:Nr, widths(i) = sum(row_widths{i}); end
+%    total_width = max(widths);
+% 
+%    ind_map = reshape(1:(total_height*total_width),total_height,total_width);
+% 
+%    Ntiles = numel(cell2mat(row_widths));
+%   % starts_col = [1 1+cumsum(row_widths(1:end-1))];
+%    starts_row = [1 1+cumsum(row_heights(1:end-1))];
+%    i =1;
+%    for r =1:Nr
+%         rws = row_widths{r};
+%         starts_col = [1 1+cumsum(rws(1:end-1))];
+% 
+%         Nc_current = length(rws);
+%         for c = 1:Nc_current
+%             tile_dims(1)=row_heights(r);
+%             tile_dims(2)=rws(c);
+% 
+%             %hax = nexttile(tile_dims);
+%            % hax = subaxis(total_height,total_width,starts_row(r),starts_col(c),row_heights(r),rws(c)); 
+%          % hax = subaxis(total_height,total_width,starts_col(c),starts_row(r),rws(c),row_heights(r));
+%          inds = ind_map( starts_col(c):(starts_col(c)+rws(c)-1) , starts_row(r):(starts_row(r)+row_heights(r)-1)  );
+%          %hax = subplot(total_height,total_width,inds(:));
+%          hax = h_subplot(total_height,total_width,inds(:));
+% 
+%          %  hax = subplot_er(total_height,total_width,starts_col(c),starts_row(r),rws(c),row_heights(r));  
+%             %varargout{i}=hax;
+%             haxes(i)=hax;
+%             i = i+1;
+%             
+% %             [X,Y,Z] = peaks(20);
+% %             surf(X,Y,Z);     
+%         end
+%    end 
+% else
+%     disp('Arguments not in pairs');
+%    haxes = [];
+% end
+% end
 
 
 
@@ -392,16 +397,22 @@ hax = gca;
 
 group = 'TREAT';
 [pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+[pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
+% min_pw = min(pwelch_conf_n);
+% if min_pw<0, lift_pw = -min_pw; end;
+
 hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ); hold on;
-hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
+hs2 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p , Color='r' ); % for normal distribution CI
+%hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
 % for diff graph
 pwelch_mean_TREAT = pwelch_mean;
 pwelch_sems_TREAT = pwelch_sems;
 
 group = 'CTRL';
 [pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+[pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
 hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )   );  hold on;
-hs1 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='k' );
+hs1 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p, Color='k' );% for normal distribution CI
 %set(gca, 'XScale', 'log', 'YScale','log');
 % for diff graph
 pwelch_mean_CTRL = pwelch_mean;
@@ -418,6 +429,14 @@ hax.YTick = [10^-8 10^-6 10^-4 10^-2];
 title('Averaged PSD');
 %format_axes(hax);
 squareaxis(hax);
+
+    function [pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems)
+        pwelch_conf_n = pwelch_mean - pwelch_sems*1.96;
+        pwelch_conf_p = pwelch_mean + pwelch_sems*1.96;
+        pwelch_conf_n(pwelch_conf_n<0)=0+eps;
+        pwelch_conf_p(pwelch_conf_p<0)=0+eps;
+    end
+
 end
 
 
@@ -433,43 +452,59 @@ pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TRE
 hp_d = plot(pwelch_f+1,pwelch_ratio_mean,'Color',plt.colors.( 'TREAT' )  );  hold on;
 % hp_d = plot(pwelch_f+1,pwelch_mean_diff,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
 % hs_d= confidenceshade( pwelch_f+1 , abs( pwelch_mean_diff - pwelch_sems_diff ) , abs( pwelch_mean_diff + pwelch_sems_diff ), Color='k' );
-hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem  ,  pwelch_ratio_mean + pwelch_ratio_sem , Color='k' );
+% hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem  ,  pwelch_ratio_mean + pwelch_ratio_sem , Color='k' );
+hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem*1.96  ,  pwelch_ratio_mean + pwelch_ratio_sem*1.96 , Color='k' ); % for normal distribution CI
 
 hax = gca;
-set(hax, 'XScale', 'log', 'YScale','log');
-%set(gca,'YScale','log');
+%set(hax, 'XScale', 'log', 'YScale','log');
+set(gca,'XScale','log');
 %grid on
 % ylim([10^-9 10^-2]);
-ylim([0 4]);
+ylim([0 8]);
 xlim([1 2*10^3]);
 xlabel(plt.labelfreqHz);
+ylabel('FCD/Cx PSD ratio')
 
 % ticks
 hax.XTick =[1 10 100 1000];
 
-
+box on;
 %ylabel(plt.labelpsdratio);
 title('PSDs comparison');
 %format_axes(hax);
 squareaxis(hax);
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 end
+
+
 
 function plot_pieIEDs(pieData)
 hax = gca;
 
 labelsDetTypes = {'IED without HFOs','GR',['FR+GR'],'FR'};
 for i=1:numel(labelsDetTypes )
-    labelsPerc{i} = ['\fontsize{' num2str(plt.FontSizeAnnotate) '}' sprintf('%s (%.1f%%)', labelsDetTypes {i}, 100*pieData(i))   ];     
+    switch i
+        case 1
+            labelsPerc{i} = ['\fontsize{' num2str(plt.FontSizeAnnotate) '}' sprintf('%s \n(%.1f%%)', labelsDetTypes {i}, 100*pieData(i))   ];  % newline   
+        otherwise
+            labelsPerc{i} = ['\fontsize{' num2str(plt.FontSizeAnnotate) '}' sprintf('%s (%.1f%%)', labelsDetTypes {i}, 100*pieData(i))   ];
+    end
 end
-pieHandle = pie(pieData);
+pieHandle = pie(pieData,labelsPerc);
 
 %pieHandle = pie(pieData,labelsPerc);
 colors = favouritecolors({'w','k','red','premeksskin'});
 posLabel = 0.13+[0.55 1.1 1.45 1.2];
 for iHandle = 2:2:2*numel(labelsPerc)
     pieHandle(iHandle-1).FaceColor=colors(iHandle/2,:);
-    %pieHandle(iHandle).Position = posLabel(iHandle/2)*pieHandle(iHandle).Position;
+    pieHandle(iHandle).Position = posLabel(iHandle/2)*pieHandle(iHandle).Position;  
 end
+[pieHandle([1 3 5 7]).EdgeColor] = deal('none');  % remove black line around the shit piece
+hc = viscircles([0 0],1);
+hc.Children(1).LineWidth =0.5;
+hc.Children(2).LineWidth =0.5;
+hc.Children(1).Color = 'k';
+hc.Children(2).Color = 'k';
 % rotate
 hax.View = [180 90];
 % squareaxis
@@ -485,39 +520,49 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function format_axes(hax)
-arguments 
-    hax = gca;
-end
-hax.FontSize = plt.FontSize; % premeks favourite
-hax.LabelFontSizeMultiplier = 1; % prevent font size from changing
-
-% Line width
-setall('LineWidth',0.4);
-
-% Title format
-hax.Title.FontSize=plt.FontSize;
-hax.Title.FontWeight='normal';
-
-hax.TitleFontWeight ="normal";
-hax.TitleFontSizeMultiplier=1;
-
-Nstr = numel(hax.Title.String);
-for i =1:Nstr
-    switch class(hax.Title.String)
-        case 'char'
-            hax.Title.String=[ '\fontsize{' num2str(plt.FontSize) '}' hax.Title.String ];
-        case 'cell'
-            hax.Title.String{i}=[ '\fontsize{' num2str(plt.FontSize) '}' hax.Title.String{i} ];
-    end
-end
-%
-
-hax.XTickLabelRotationMode="manual";
-hax.XTickLabelRotation=0;
-
-trueblackaxis(hax);
-scientificfontcompact;
-
-end
+% 
+% function format_axes(hax)
+% arguments 
+%     hax = gca;
+% end
+% hax.FontSize = plt.FontSize; % premeks favourite
+% hax.LabelFontSizeMultiplier = 1; % prevent font size from changing
+% 
+% % Line width
+% setall('LineWidth',0.4);
+% 
+% % Title format
+% hax.Title.FontSize=plt.FontSize;
+% hax.Title.FontWeight='normal';
+% 
+% hax.TitleFontWeight ="normal";
+% hax.TitleFontSizeMultiplier=1;
+% 
+% Nstr = numel(hax.Title.String);
+% for i =1:Nstr
+%     switch class(hax.Title.String)
+%         case 'char'
+%             hax.Title.String=[ '\fontsize{' num2str(plt.FontSize) '}' hax.Title.String ];
+%         case 'cell'
+%             hax.Title.String{i}=[ '\fontsize{' num2str(plt.FontSize) '}' hax.Title.String{i} ];
+%     end
+% end
+% %
+% 
+% % set length of ticks
+% set(hax, 'Units', 'centimeters');
+% pos = hax.Position;
+% height_cm = pos(4);
+% desired_length = 0.05; %cm
+% normalized_length = desired_length./height_cm;
+% hax.TickLength = [normalized_length, 0.01];
+% 
+% 
+% % disable labels rotation
+% hax.XTickLabelRotationMode="manual";
+% hax.XTickLabelRotation=0;
+% 
+% trueblackaxis(hax);
+% scientificfontcompact;
+% 
+% end

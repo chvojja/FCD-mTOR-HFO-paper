@@ -51,7 +51,7 @@ for ir = 1:r
        %ds = RMSDetectorChvojkaEdit_proIED_2(s,[],fs,filteringfun,fmax,rmsLen,join_gap,minAcceptLen,n_std_rms,widen,minPeaks,b_disp);
        Nover = 20;
        b_disp = false;
-       %b_disp = true;
+       b_disp = true;
        ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,filteringfun_R, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
 
        % vicinity filter
@@ -101,7 +101,7 @@ for ir = 1:r
         %ds = RMSDetectorChvojkaEdit_proIED_2(s,[],fs,filteringfun,fmax,rmsLen,join_gap,minAcceptLen,n_std_rms,widen,minPeaks,b_disp);
        Nover = 20;
        b_disp = false;
-       %b_disp = true;
+       b_disp = true;
        ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,filteringfun_FR, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
 
        % vicinity filter

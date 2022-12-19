@@ -420,7 +420,6 @@ plotHistCount(Tplot ,feature);
 ylabel('share, %');
 title('Inside');
 
-
 axes(sp(12));
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
 plotHistCount(Tplot ,feature);

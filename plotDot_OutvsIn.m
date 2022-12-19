@@ -6,15 +6,32 @@ Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLe
 Tplot.InLesion = categorical(Tplot.InLesion);
 Tplot.InLesion = cat2num(Tplot.InLesion,'false',1,'true',2);
 
-hs = scatterbetter(Tplot,'InLesion',feature,'filled','ColorVariable','InLesion');
-colormap([ plt.colors.CTRL; plt.colors.TREAT] );
+hs = scatter(Tplot,'InLesion',feature); % ,'MarkerFaceAlpha',0.5,'MarkerEdgeAlpha',0.5  );
+hs.MarkerEdgeColor = 'k';
+hs.Marker="o";
+hs.SizeData=5;
+
+% hide axis labels based on table
+hs.YVariable=[];
+hs.XVariable=[];
+
+
+%colormap([ plt.colors.CTRL; plt.colors.TREAT] );
 %hlbl = labelpoints (Tplot.InLesion, Tplot.(feature), Tplot.Number, 'SW', 0.15, 'FontSize', 7);
 %hs.XJitterWidth = 0.5;
 %set(gca,'YLim',[-3.5 0]);
 x12 = [1 2];
-hp = plot(x12, [  Tplot(Tplot.InLesion==1,:).(feature)  Tplot(Tplot.InLesion==2,:).(feature)  ] , 'LineWidth', 1, 'Color','k'    );
+hp = plot(x12, [  Tplot(Tplot.InLesion==1,:).(feature)  Tplot(Tplot.InLesion==2,:).(feature)  ] , 'Color','k'    );
 
+
+
+% hb.MarkerColor = [0 0 0];
+% hb.MarkerSize = 1;
+% hb.MarkerStyle = 'none';
+% hb.BoxFaceColor = 'k';
+% hb.BoxFaceAlpha = 0;
 box on
+
 set(gca,'XLim',[0.5 2.5]);
 set(gca,'XTick',[1 2]);
 set(gca,'xticklabel',plt.xticklabelOutvsIn);

@@ -11,6 +11,10 @@ fs = 5000;
 % rmpath('testing','full','full_strict');
 % addpath('full_strict');
 
+
+rmpath('testing','full','full_strict');
+addpath('full');
+
 %addpath('full');
 %%
 script_analysis_0_cohort;
@@ -284,7 +288,7 @@ load(a.pwd('TsubRes_inout.mat'));
 
 load(a.pwd('Tplt_CtrlVsTreat.mat'));
 load(a.pwd('Tplt_OutVsIn.mat')); 
-load(a.pwd('stats')); 
+load(a.pwd('stats.mat')); 
 
 % psdDB_L = thresholdbyslopestd(pxxwelch,50,8,1.8);
 % pxxwelch(psdDB_L) = NaN;

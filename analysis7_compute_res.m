@@ -89,32 +89,66 @@ stats.overall_IEDs_Nevents  = numel(find((Tiedf.Role == 'TREAT' & Tiedf.LabelNam
 
 stats.totalHFOevents_seizing_and_nonseizing =  sum(TsubRes.NHFOs(TsubRes.Role == "TREAT"));
 
-% Test histograms
-
-% KS test
+%% Test histograms
+% KS tests
 % In Tplt_OutVsIn FRpeaksPosition row we have the raw HFO peaks positions
-positions_inC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'In_data'}; 
+% KS1 differnt from normal
+positions_C = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'In_data'}; 
+stats = test_kstest(positions_C{:},'FRpeaksPositions_In_distribution_diffferent_from_norm',stats); % struct.h struct.p
+positions_C = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'Out_data'}; 
+stats = test_kstest(positions_C{:},'FRpeaksPositions_Out_distribution_diffferent_from_norm',stats); % struct.h struct.p
+positions_C = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'In_data'}; 
+stats = test_kstest(positions_C{:},'RpeaksPositions_In_distribution_diffferent_from_norm',stats); % struct.h struct.p
+positions_C = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'Out_data'}; 
+stats = test_kstest(positions_C{:},'RpeaksPositions_Out_distribution_diffferent_from_norm',stats); % struct.h struct.p
+
+% KS2 differnt in vs out
+positions_inC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'In_data'};  % all times of HFO oscillation peaks pooled together inside lesion
 positions_outC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'Out_data'}; 
-% test HFO histograms 
-if ~isempty(positions_inC{:}) && ~isempty(positions_outC{:})
-    [h,p] = kstest2( positions_inC{:} , positions_outC{:} ,'Alpha',0.05);
-else
-    h = NaN; p = NaN;
-end
-stats.FRpeaksPositions_distribution_diffferent = h;
-stats.FRpeaksPositions_distribution_diffferent_p = p;
+stats = test_kstest(positions_inC{:},positions_outC{:},'FRpeaksPositions_distribution_In_vs_Out_diffferent',stats);
 
-
-positions_inC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'In_data'}; 
+positions_inC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'In_data'};  % all times of HFO oscillation peaks pooled together inside lesion
 positions_outC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'Out_data'}; 
-% test HFO histograms 
-if ~isempty(positions_inC{:}) && ~isempty(positions_outC{:})
-    [h,p] = kstest2( positions_inC{:} , positions_outC{:} ,'Alpha',0.05);
-else
-    h = NaN; p = NaN;
-end
-stats.RpeaksPositions_distribution_diffferent = h;
-stats.RpeaksPositions_distribution_diffferent_p = p;
+stats = test_kstest(positions_inC{:},positions_outC{:},'RpeaksPositions_distribution_In_vs_Out_diffferent',stats);
+
+% KS2 different FR vs R
+FRpositions_inC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'In_data'};  % all times of HFO oscillation peaks pooled together inside lesion
+FRpositions_outC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'Out_data'};  
+
+Rpositions_inC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'In_data'};  % all times of HFO oscillation peaks pooled together inside lesion
+Rpositions_outC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'Out_data'}; 
+
+stats = test_kstest( [FRpositions_inC{:}; FRpositions_outC{:}] , [Rpositions_inC{:}; Rpositions_outC{:}] , 'PeaksPositions_distribution_FR_vs_R_diffferent',stats);
+
+
+%%
+
+
+% 
+% stats.FRpeaksPositions_distribution_In_vs_Out_diffferent = test_kstest(positions_inC{:},positions_outC{:});
+% %
+% positions_inC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'In_data'};  % all times of HFO oscillation peaks pooled together inside lesion
+% positions_outC = Tplt_OutVsIn{ 'FRpeaksPositions_detectionLevel_ms', 'Out_data'}; 
+% % test HFO histograms 
+% if ~isempty(positions_inC{:}) && ~isempty(positions_outC{:})
+%     [h,p] = kstest2( positions_inC{:} , positions_outC{:} ,'Alpha',0.05);
+% else
+%     h = NaN; p = NaN;
+% end
+% stats.FRpeaksPositions_distribution_diffferent = h;
+% stats.FRpeaksPositions_distribution_diffferent_p = p;
+% 
+% 
+% positions_inC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'In_data'}; 
+% positions_outC = Tplt_OutVsIn{ 'RpeaksPositions_detectionLevel_ms', 'Out_data'}; 
+% % test HFO histograms 
+% if ~isempty(positions_inC{:}) && ~isempty(positions_outC{:})
+%     [h,p] = kstest2( positions_inC{:} , positions_outC{:} ,'Alpha',0.05);
+% else
+%     h = NaN; p = NaN;
+% end
+% stats.RpeaksPositions_distribution_diffferent = h;
+% stats.RpeaksPositions_distribution_diffferent_p = p;
 
 % This is a slow function
 stats = addMeanshapes(stats, TsubRes, Tiedf);
@@ -149,8 +183,60 @@ stats.percents_IEDsNoHFO = percentsEachAnimal(:,1);
 stats.percents_IEDsWithHFO = percentsEachAnimal(:,2:end);
 
 
+%
+% Multimadals
+
+feature = 'Rfreq';
+frqs = Tiedf{Tiedf.Role=='TREAT' & ~isnan(Tiedf.(feature)),feature};
+[mus,sems] = multimodalstats(frqs,2,'sem');
+stats.([feature '_multimodals_mu']) = mus;
+stats.([feature '_multimodals_sems']) = sems;
+stats.([feature '_multimodals_AsText_1']) = printmeansem(mus(1),sems(1));
+stats.([feature '_multimodals_AsText_2']) = printmeansem(mus(2),sems(2));
+
+feature = 'FRfreq';
+frqs = Tiedf{Tiedf.Role=='TREAT' & ~isnan(Tiedf.(feature)),feature};
+[mus,sems] = multimodalstats(frqs,1,'sem');
+stats.([feature '_multimodals_mu']) = mus;
+stats.([feature '_multimodals_sems']) = sems;    
+stats.([feature '_multimodals_AsText_1']) = printmeansem(mus(1),sems(1));
+
+
 
 save7fp = a.pwd('stats.mat'); save7
+
+
+
+function stats = test_kstest(varargin)
+% tests by kstest or kstest2
+h = NaN; p = NaN;
+switch nargin
+    case 3
+        x=varargin{1};
+        name=varargin{2};
+        stats=varargin{3};
+
+         x = normalize(x);
+            if ~isempty(x)
+                [h,p] = kstest( x ,'Alpha',0.05); 
+            end
+         
+    case 4
+        x=varargin{1};
+        y=varargin{1};
+        name=varargin{3};
+        stats=varargin{4};
+
+         x = normalize(x);
+         y = normalize(y);
+            if ~isempty(x) && ~isempty(y)
+                [h,p] = kstest2( x , y ,'Alpha',0.05); 
+            end
+end
+stats.([name '_p'])=p;
+stats.([name '_h'])=h;
+
+end
 
 
 %%
