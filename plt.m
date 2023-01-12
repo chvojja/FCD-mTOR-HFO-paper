@@ -26,9 +26,10 @@ classdef plt
         labelpsd = 'PSD (mV^2/Hz)'
         labelpsdratio = 'FCD/Cx PSD ratio (-)';
 
-        hfodetector_param = 'default';
+        %hfodetector_param = 'default';
+        hfodetector_param = 'default_new_moreDetections';
 
-        YLimRippleRate = [ 0  0.3];
+        YLimRippleRate = [ 0  0.4];
         YLimRippleFreq  = [40 140];
 
         YLimFRippleFreq = [350 700];
@@ -46,7 +47,7 @@ classdef plt
         dpi = 1000;
         formatExt = 'png';
         closeFigs = true;
-        savefigs_b = false;
+        savefigs_b = true;
 
         barsMeanFun = @nanmedian;
 

@@ -4,7 +4,7 @@ classdef a < Analyzer %& JancaSpike %& Verboser
     properties (Constant)  % Custom constants
 
         IEDlabelName = 'default' ; 
-        hfodetector_param = 'default';
+        hfodetector_param = 'default_new_moreDetections';
 
         root = 'C:\temp_FCD_analyza_1Full';
         labelFolder = 'IEDFRRfinal2'; 
@@ -13,11 +13,13 @@ classdef a < Analyzer %& JancaSpike %& Verboser
 %         names =            { JancaSpike.strict5000Hz.VKJlabelsName    JancaSpike.default.VKJlabelsName  };
 %         colors =           { JancaSpike.strict5000Hz.VKJlabelsColor   JancaSpike.default.VKJlabelsColor };
 %         jancaStrings =     { JancaSpike.strict5000Hz.settingsStr      JancaSpike.default.settingsStr };
+%         names =            {    JancaSpike.default.VKJlabelsName  };
+%         colors =           { JancaSpike.default.VKJlabelsColor };
+%         jancaStrings =     {    JancaSpike.default.settingsStr };
+
         names =            {    JancaSpike.default.VKJlabelsName  };
         colors =           { JancaSpike.default.VKJlabelsColor };
         jancaStrings =     {    JancaSpike.default.settingsStr };
-
-        
 
     end
 
@@ -39,6 +41,14 @@ classdef a < Analyzer %& JancaSpike %& Verboser
     
     end
 
+    function TallDetectionsOneLblFile = labelfilter(TallDetectionsOneLblFile)
+        % filter some labels
+        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='strict5000Hz' , : ); 
+        T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='default' , : );
+        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName == 'dontmiss5000Hz' , : ); 
+    end
+
+
     function set_yprops(ha,nameOfPlot) 
         switch nameOfPlot
             case 'gammaripple2IEDshare'
@@ -58,19 +68,13 @@ classdef a < Analyzer %& JancaSpike %& Verboser
             case 'IEDsWithHFOs'
 %                 ha.YLim = [0 10];
 %                 ha.YTick = [0 2 4 6 8 10];
-                ha.YLim = [0 4];
-                ha.YTick = [0 1 2 3 4];
+                ha.YLim = [0 6];
+                ha.YTick = [0 2 4 6];
         end
         %%hax(9).YTick = [0 5 10 15];
     end
 
 
-    function T = labelfilter(TallDetectionsOneLblFile)
-        % filter some labels
-        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='strict5000Hz' , : ); 
-        T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='default' , : );
-        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='dontmiss5000Hz' , : ); 
-    end
 
     end
 

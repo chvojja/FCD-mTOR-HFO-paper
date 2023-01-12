@@ -121,12 +121,13 @@ plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,
 
 % Pie and small boxes
 axes(hax(7)); hold on;
-plot_pieIEDs(stats.pieData);
 
+plot_pieIEDs(stats.pieData);
 
 axes(hax(8)); hold on; 
 % hb=boxchart([1 1 1 1 1 1 1 1 ], stats.percents_IEDsNoHFO );
 hb=boxchart(stats.percents_IEDsNoHFO );
+hb.BoxWidth=1;
 format_boxchart(hb);
 xticklabels('IED');
 ylabel('IEDs w/o HFO (%)');
@@ -139,6 +140,7 @@ ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
 axes(hax(9)); hold on; 
 hb=boxchart( stats.percents_IEDsWithHFO);
+hb.BoxWidth=0.8;
 format_boxchart(hb);
 xticklabels({'GR','FR','FR+GR'});
 ylabel('IEDs with HFO (%)');
@@ -156,8 +158,8 @@ axesfun(hax,@format_axes);
 %%
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
 if plt.savefigs_b
-savefig( a.pwd(['Fig3.fig']) );
-printpaper(  a.pwd([ ' Fig3.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+savefig( a.pwd([mfilename '.fig']) );
+printpaper(  a.pwd([mfilename '.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 end
 
 
@@ -445,8 +447,8 @@ function plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_m
 
 pwelch_ratio_mean=(pwelch_mean_TREAT./pwelch_mean_CTRL);
 pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL).^2 );
-% pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL)^2  - 2*    );
 
+% https://en.wikipedia.org/wiki/Propagation_of_uncertainty
 % |A/B| * sqrt( (sA/A) ² + (sB/B)² )
 
 hp_d = plot(pwelch_f+1,pwelch_ratio_mean,'Color',plt.colors.( 'TREAT' )  );  hold on;

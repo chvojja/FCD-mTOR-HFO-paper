@@ -60,7 +60,7 @@ Tplt_OutVsIn = rownames2var( Tplt_OutVsIn , 'Features' );
 
 save7fp = a.pwd('Tplt_CtrlVsTreat.mat'); save7
 save7fp = a.pwd('Tplt_OutVsIn.mat'); save7
-%%
+
 writetable( Tplt_CtrlVsTreat(:,setdiff(Tplt_CtrlVsTreat.Properties.VariableNames,{'CTRL_data','TREAT_data'}))    , a.pwd('Tplt_CtrlVsTreat.xlsx') );
 writetable( Tplt_OutVsIn(:,setdiff(Tplt_OutVsIn.Properties.VariableNames,{'In_data','Out_data'}))    , a.pwd('Tplt_OutVsIn.xlsx') );
 

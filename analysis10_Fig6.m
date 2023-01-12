@@ -141,6 +141,7 @@ ylabel('Probability (%)');
 title('Time relationship - out');
 format_axes(ha);
 squareaxis(ha);
+format_post_histograms();
 
 ha = hax(12);
 axes(ha); hold on;
@@ -151,4 +152,10 @@ plotHistCount(Tplot ,feature);
 title('Time relationship - in');
 format_axes(ha);
 squareaxis(ha);
+format_post_histograms();
 
+%%
+if plt.savefigs_b
+savefig( a.pwd([mfilename '.fig']) );
+printpaper(  a.pwd([mfilename '.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
+end

@@ -8,9 +8,9 @@ fs = 5000;
 % testing
 %rmpath('full'); addpath('testing');
 
-rmpath('testing','full','full_strict','full_dontmiss');
-addpath('full_strict');
-addpath('full');
+rmpath('testing','full','full_strict','full_dontmiss','full_hfoloose');
+%addpath('full_dontmiss');
+addpath('full_hfoloose');
 
 %%
 script_analysis_0_cohort;
@@ -228,10 +228,10 @@ load(a.pwd('Tied.mat'));% end;
 
 % Filter by IED type and HFO type
 %IEDlabelName = 'dontmiss5000Hz' ; 
-IEDlabelName = 'default' ;
+%IEDlabelName = 'default' ;
 %hfoDetectionName = 'Tiedhfo_default';
 
-IEDlabelName = 'strict5000Hz' ; 
+%IEDlabelName = 'strict5000Hz' ; 
 %hfoDetectionName = 'Tiedhfo_strict';
 
 
@@ -245,7 +245,7 @@ if exist('Tiedf') % clear old
 end
 Tiedhfo = load2(a.pwd(['Tiedhfo_' plt.hfodetector_param '.mat'])); 
 Tiedf = Tied;
-Tiedf = Tiedf( Tiedf.LabelName == IEDlabelName , : ); % get rid of different type of label
+Tiedf = Tiedf( Tiedf.LabelName == a.IEDlabelName , : ); % get rid of different type of label
 %picIdentifier = ['IED_' IEDlabelName  '_HFO_' 'Tiedhfo_default' '_'];
 
 Tiedf = leftjoinsorted(Tiedf,Tiedhfo,'LeftKeys',{'ID'},'RightKeys',{'ID'}); % 'RightVariables',{'HasR','HasFR'})
@@ -299,7 +299,7 @@ load(a.pwd('stats.mat'));
 
 %%
 %
-analysis9_plots;
+%analysis9_plots;
 
 
 %%

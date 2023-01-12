@@ -6,14 +6,6 @@ Tplot = TsubRes_inout( TsubRes_inout.Role == 'TREAT' , {'Subject','Number','InLe
 Tplot.InLesion = categorical(Tplot.InLesion);
 Tplot.InLesion = cat2num(Tplot.InLesion,'false',1,'true',2);
 
-hs = scatter(Tplot,'InLesion',feature); % ,'MarkerFaceAlpha',0.5,'MarkerEdgeAlpha',0.5  );
-hs.MarkerEdgeColor = 'k';
-hs.Marker="o";
-hs.SizeData=5;
-
-% hide axis labels based on table
-hs.YVariable=[];
-hs.XVariable=[];
 
 
 %colormap([ plt.colors.CTRL; plt.colors.TREAT] );
@@ -23,6 +15,18 @@ hs.XVariable=[];
 x12 = [1 2];
 hp = plot(x12, [  Tplot(Tplot.InLesion==1,:).(feature)  Tplot(Tplot.InLesion==2,:).(feature)  ] , 'Color','k'    );
 
+
+hs = scatter(Tplot,'InLesion',feature); % ,'MarkerFaceAlpha',0.5,'MarkerEdgeAlpha',0.5  );
+%hs = scatter(Tplot,'InLesion',feature,'filled'); % 
+hs.MarkerFaceColor = 'w';
+hs.MarkerEdgeColor = 'k';
+hs.Marker="o";
+hs.SizeData=5;
+
+
+% hide axis labels based on table
+hs.YVariable=[];
+hs.XVariable=[];
 
 
 % hb.MarkerColor = [0 0 0];

@@ -3,21 +3,23 @@ classdef a < Analyzer %& JancaSpike %& Verboser
     
     properties (Constant)  % Custom constants
 
-        IEDlabelName = 'default' ; 
-        hfodetector_param = 'default';
+        IEDlabelName = 'dontmiss5000Hz' ; 
+        hfodetector_param = 'default_new_moreDetections';
 
-        root = 'C:\temp_FCD_analyza_1Full';
-        labelFolder = 'IEDFRRfinal2'; 
+        root = 'D:\temp_FCD_analyza_full_dontmiss';
+        labelFolder = 'IEDFRRfinal_dontmiss'; 
         verboser = Verboser();
            
 %         names =            { JancaSpike.strict5000Hz.VKJlabelsName    JancaSpike.default.VKJlabelsName  };
 %         colors =           { JancaSpike.strict5000Hz.VKJlabelsColor   JancaSpike.default.VKJlabelsColor };
 %         jancaStrings =     { JancaSpike.strict5000Hz.settingsStr      JancaSpike.default.settingsStr };
-        names =            {    JancaSpike.default.VKJlabelsName  };
-        colors =           { JancaSpike.default.VKJlabelsColor };
-        jancaStrings =     {    JancaSpike.default.settingsStr };
+%         names =            {    JancaSpike.default.VKJlabelsName  };
+%         colors =           { JancaSpike.default.VKJlabelsColor };
+%         jancaStrings =     {    JancaSpike.default.settingsStr };
 
-        
+        names =            { JancaSpike.dontmiss5000Hz.VKJlabelsName      };
+        colors =           { JancaSpike.dontmiss5000Hz.VKJlabelsColor   };
+        jancaStrings =     { JancaSpike.dontmiss5000Hz.settingsStr    };       
 
     end
 
@@ -33,11 +35,19 @@ classdef a < Analyzer %& JancaSpike %& Verboser
     
     % Keep only first 2 files and all label files
     Teeg = TfilesOneSub( TfilesOneSub.Type =='eeg' & TfilesOneSub.SubFold1 == '5000HZ' , :); 
-    Tlbl = TfilesOneSub( TfilesOneSub.Type =='lbl' & TfilesOneSub.SubFold1 == a.labelFolder, : ); 
+    Tlbl = TfilesOneSub( TfilesOneSub.Type =='lbl' & TfilesOneSub.SubFold1 == 'IEDFRRfinal_dontmiss', : ); 
     T = [Teeg; Tlbl];
     
     
     end
+
+    function TallDetectionsOneLblFile = labelfilter(TallDetectionsOneLblFile)
+        % filter some labels
+        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='strict5000Hz' , : ); 
+        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='default' , : );
+        T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName == 'dontmiss5000Hz' , : ); 
+    end
+
 
     function set_yprops(ha,nameOfPlot) 
         switch nameOfPlot
@@ -58,19 +68,13 @@ classdef a < Analyzer %& JancaSpike %& Verboser
             case 'IEDsWithHFOs'
 %                 ha.YLim = [0 10];
 %                 ha.YTick = [0 2 4 6 8 10];
-                ha.YLim = [0 4];
-                ha.YTick = [0 1 2 3 4];
+                ha.YLim = [0 6];
+                ha.YTick = [0 2 4 6];
         end
         %%hax(9).YTick = [0 5 10 15];
     end
 
 
-    function T = labelfilter(TallDetectionsOneLblFile)
-        % filter some labels
-        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='strict5000Hz' , : ); 
-        T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='default' , : );
-        %T = TallDetectionsOneLblFile( TallDetectionsOneLblFile.LabelName =='dontmiss5000Hz' , : ); 
-    end
 
     end
 

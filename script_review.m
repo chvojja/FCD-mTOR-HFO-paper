@@ -7,19 +7,21 @@ fs = 5000;
 res = 1.8;
 frange = [80 1000];
 frange = [30 250];
-frange = [300 800];
+frange = [200 800];
 Nfreqpoints = 10;
 
-selectL = Tiedf.HasR & Tiedf.Role == 'CTRL';
-selectL = Tiedf.HasFR & Tiedf.Role == 'TREAT';
+
+
+selectL = Tiedf.HasFR & Tiedf.Role == 'CTRL';
+%selectL = Tiedf.HasR & Tiedf.Role == 'TREAT';
 %selectL = Tiedf.HasFR & Tiedf.Role == 'TREAT' & Tiedf.Subject=='Naty419';
 
 
 inds = find(selectL);
 for i = inds'
-    s = Tiedf.Signal{i} ;
-
-    
+    %s = Tiedf.Signal{i} ;
+    s =  loadfun( plt.loadSignalIED, Tiedf.Signal( i )  );
+   
     subplot(3,1,1)
 
     tSampling=1/fs;

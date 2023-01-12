@@ -1,4 +1,8 @@
 
+% tady se nebude nic menit
+% amplitudy u kontrol jsou 4x zvetsene, ok
+%%%
+
 % plotting algo
 % data selection
 
