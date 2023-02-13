@@ -117,6 +117,11 @@ for i = 1:r
      % Save the signal and save function handle by which to load it again
      Tied.Signal{i} = signal_fp;
      savebin( signal_fp , sPartFinal );
+
+     % correct StartDn and EndDn in the table so that it matches the centering:
+     add2StartEndToCenterDn=-sec2dn(offsetI/fs);
+     Tied.StartDn(i)=Tied.StartDn(i)+add2StartEndToCenterDn;
+     Tied.EndDn(i)=Tied.EndDn(i)+add2StartEndToCenterDn;
      
      a.verboser.sprintf2('ProgressPerc',round(100*i/r), 'extracting, aligning and saving IED signal');
 end

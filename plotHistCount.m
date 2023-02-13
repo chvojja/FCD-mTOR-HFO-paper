@@ -1,10 +1,11 @@
-function plotHistCount(TwithPeakCounts,feature)
+function means = plotHistCount(TwithPeakCounts,feature)
 
 hold on
 peakcounts =  cell2mat(  TwithPeakCounts.(feature)  );
 meanIED = sum(cell2mat(TwithPeakCounts.meanIED),1);
 
 if ~isempty(peakcounts)
+ 
     NbinsOnseSide = 6;
     NsOneBin = 20;
 
@@ -38,32 +39,40 @@ if ~isempty(peakcounts)
     % rescale meanIED between 0 and max_percentage_y
     [ meanIED_scaled, scale_factor ] = fitrange(meanIED(sI:eI),[1 max_percentage_y]);
 
-%     meanIED = meanIED - max(meanIED);
-%     meanIED = meanIED * max(means);
-    % plot
-
+    % for line plot
     time_centered = 1000*s2t(meanIED_scaled,fs); % in miliseconds
     time_centered = time_centered-max(time_centered)/2;
-    h1 = plot(time_centered,meanIED_scaled,'Color','k','LineWidth',plt.LineWidthThicker); hold on;
-    xlabel(plt.labeltimems);
-   % Nb=eI-sI+1;
-    
-    time_range = [time_centered(1) time_centered(end)];
-    set(gca,'XLim',time_range);
-   % maxTime = max(get(gca,'XLim'));
-  %  bar(  linspace(0,maxTime,NbinsOnseSide*2)    ,    means ,'k')  %max(ied_avg)
-    
-%    time_range_onebin = abs(diff(time_range))/(NbinsOnseSide*2);
-%     Ns_bin numel(meanIED_scaled)/(NbinsOnseSide*2);
-    %time_centered([round(NsOneBin/2):NsOneBin:(numel(meanIED_scaled)-round(NsOneBin/2))]);
+
+
+    hold on;
+
+    % normal bars
+    maxTime = max(get(gca,'XLim'));
     t_bins = time_centered( [1:NsOneBin:(numel(meanIED_scaled))]+round(NsOneBin/2) );
-    er = errorbar( t_bins ,  means  ,sems,sems,'o','LineWidth',plt.LineWidthThin);    
+    bar(  t_bins    ,    means ,'w') 
+%     er = errorbar( t_bins ,  means  ,zeros(size(sems)),sems,'LineWidth',plt.LineWidthThin);    
+    er = errorbar( t_bins ,  means  ,zeros(size(sems)),sems,'LineStyle','none','LineWidth',plt.LineWidthThin);
     er.CapSize = 3;
     er.MarkerSize = 3;
-%     er.Color = [0 0 0];    
-%     er.LineStyle = 'none'; 
     [er(:).Color] = deal([0 0 0 ]);
     [er(:).LineStyle] = deal('none');
+
+    
+    h1 = plot(time_centered,meanIED_scaled,'Color','k','LineWidth',plt.LineWidthThicker); 
+    xlabel(plt.labeltimems);
+    time_range = 1.02*[time_centered(1) time_centered(end)];
+    set(gca,'XLim',time_range);
+
+%     % compact error bars without bars
+% %    time_range_onebin = abs(diff(time_range))/(NbinsOnseSide*2);
+% %     Ns_bin numel(meanIED_scaled)/(NbinsOnseSide*2);
+%     %time_centered([round(NsOneBin/2):NsOneBin:(numel(meanIED_scaled)-round(NsOneBin/2))]);
+%     t_bins = time_centered( [1:NsOneBin:(numel(meanIED_scaled))]+round(NsOneBin/2) );
+%     er = errorbar( t_bins ,  means  ,sems,sems,'o','LineWidth',plt.LineWidthThin);    
+%     er.CapSize = 3;
+%     er.MarkerSize = 3;
+%     [er(:).Color] = deal([0 0 0 ]);
+%     [er(:).LineStyle] = deal('none');
     
     
     box on

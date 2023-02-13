@@ -52,13 +52,19 @@ function Tplt_OutVsIn = updateT2(Tplt_OutVsIn,TsubRes_inout,feature, lesionPos)
             data = data(:); % we bunch together all numbers
         end
     
-        m = plt.barsMeanFun( data );
+
+        mmed = nanmedian(data);
+        m = nanmean( data );
         s = nansem( data );
+        txt_ms = printmeansem(  m  , s );
+        %txt_mmeds = printmeansem(  mmed  , s );
     
+        Tplt_OutVsIn{ feature , [ lesionPos '_median' ]} = mmed;
         Tplt_OutVsIn{ feature , [ lesionPos '_mean' ]} = m;
         Tplt_OutVsIn{ feature , [ lesionPos '_sem' ]} = s;
-        Tplt_OutVsIn( feature , [ lesionPos '_asText' ] ) = { printmeansem(  m  , s ) };
+        Tplt_OutVsIn( feature , [ lesionPos '_asText' ] ) = { txt_ms };
         Tplt_OutVsIn( feature , [ lesionPos '_data' ] ) = {data};
+        Tplt_OutVsIn( feature , [ lesionPos '_asTextPaper' ] ) = { printmeansemmedian_HFOpaper(data) }; % mean +- sem (median) zaokrouhleno
 
 end
 

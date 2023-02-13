@@ -4,17 +4,7 @@ Tiedhfo = Tied(:,'ID');
 
 hfodetector_param = plt.hfodetector_param;
 
-% magnitude = gaussmagbp([40 50 200 250],5000);  % puvodni
-% filteringfun_R = @(x,x1)filterfft2(x,magnitude);
 
-% magnitude = gaussmagbp([30 40 250 300],5000);  % more detections
-% filteringfun_R = @(x,x1)filterfft2(x,magnitude);
-
-magnitude = gaussmagbp([35 45 250 300],5000);  % more detections
-filteringfun_R = @(x,x1)filterfft2(x,magnitude);
-
-magnitude = gaussmagbp([250 300 800 900],5000);
-filteringfun_FR = @(x,x1)filterfft2(x,magnitude);
 
 %%
 
@@ -83,7 +73,7 @@ for ir = 1:r
        Nover = 20;
        b_disp = false;
        %b_disp = true;
-       ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,filteringfun_R, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
+       ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,plt.filteringfun_R, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
 
 
        % vicinity filter
@@ -178,7 +168,7 @@ for ir = 1:r
        b_disp = false;
        %b_disp = true;
       
-       ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,filteringfun_FR, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
+       ds = RMSdetector_staba_chvojka_simplified_v1(s,fs,plt.filteringfun_FR, n_std_rms, freq_bounds , rmsLen_ms, join_gap_ms, minAcceptLen_ms, minPeaks, peakPromRatio, Nover, b_disp);
 
        % vicinity filter
        intersectingIEDbyammount_Inds = any( [abs(ds.onset_offsets-2500)<1000]' ); % also require the  HFO to intersect IED by 200ms 

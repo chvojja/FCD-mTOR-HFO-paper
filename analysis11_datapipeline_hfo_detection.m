@@ -77,6 +77,7 @@ save7fp = a.pwd('Tiedf'); save7;
 %%
 
 analysis7_compute_res;
+analysis11_add_FRindex;
 
 %%
 load(a.pwd('Tiedf.mat')); 

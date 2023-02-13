@@ -112,12 +112,16 @@ plot_IEDrate_In_vs_Out(TsubRes_inout, Tplt_OutVsIn);
 axes(hax(4)); hold on;
 plot_pwelch_individual_Cx_vs_Treat(TsubRes)
 
+
 axes(hax(5)); hold on;
-[pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL] =  plot_pwelch_means_Cx_vs_Treat(TsubRes);
+% [pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL] =  plot_pwelch_means_Cx_vs_Treat(TsubRes);
+plot_pwelch_means_Cx_vs_Treat(TsubRes);
+
 
 axes(hax(6)); hold on;
-plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL);
-
+% plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL);
+%plot_pwelch_means_Cx_vs_Treat_ZOOM(TsubRes);
+plot_pwelch_ratio(TsubRes);
 
 % Pie and small boxes
 axes(hax(7)); hold on;
@@ -133,8 +137,13 @@ xticklabels('IED');
 ylabel('IEDs w/o HFO (%)');
 % hax(8).YLim = [80 100];
 % hax(8).YTick = [80 85 90 95 100];
-hax(8).YLim = [90 100];
-hax(8).YTick = [90 92 94 96 98 100];
+% hax(8).YTick = [90 92 94 96 98 100];
+% 
+% hax(8).YLim = [88 98];
+% hax(8).YTick = [88 90 92 94 96 98];
+
+hax(8).YLim = [84 99];
+hax(8).YTick = [84 87 90 93 96 99];
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 
 
@@ -159,6 +168,7 @@ axesfun(hax,@format_axes);
 %setall('LineWidth',0.5,'FontSize',plt.FontSize);
 if plt.savefigs_b
 savefig( a.pwd([mfilename '.fig']) );
+exportgraphics(gcf, a.pwd([mfilename '.pdf'])  ,'ContentType','vector');
 printpaper(  a.pwd([mfilename '.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 end
 
@@ -394,31 +404,20 @@ title('PSD in FCD/controls');
 squareaxis(hax);
 end
 
-function [pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL] =  plot_pwelch_means_Cx_vs_Treat(TsubRes)
+
+function  plot_pwelch_means_Cx_vs_Treat(TsubRes)
 hax = gca;
 
 group = 'TREAT';
-[pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
-[pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
-% min_pw = min(pwelch_conf_n);
-% if min_pw<0, lift_pw = -min_pw; end;
-
+[pwelch_mean ,  pwelch_ci_lo, pwelch_ci_hi, pwelch_f] = getPWELCH_ci(TsubRes, group);
 hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ); hold on;
-hs2 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p , Color='r' ); % for normal distribution CI
-%hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
-% for diff graph
-pwelch_mean_TREAT = pwelch_mean;
-pwelch_sems_TREAT = pwelch_sems;
+hs2 = confidenceshade( pwelch_f+1 , pwelch_ci_lo , pwelch_ci_hi , Color='r' ); 
 
 group = 'CTRL';
-[pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
-[pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
+[pwelch_mean , pwelch_ci_lo, pwelch_ci_hi , pwelch_f] = getPWELCH_ci(TsubRes, group);
 hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )   );  hold on;
-hs1 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p, Color='k' );% for normal distribution CI
-%set(gca, 'XScale', 'log', 'YScale','log');
-% for diff graph
-pwelch_mean_CTRL = pwelch_mean;
-pwelch_sems_CTRL = pwelch_sems;
+hs1 = confidenceshade( pwelch_f+1 , pwelch_ci_lo , pwelch_ci_hi , Color='k' );% for normal distribution CI
+
 
 formatAsPSDplot();
 
@@ -431,38 +430,201 @@ hax.YTick = [10^-8 10^-6 10^-4 10^-2];
 title('Averaged PSD');
 %format_axes(hax);
 squareaxis(hax);
+    function [pwelch_mean ,  pwelch_ci_lo, pwelch_ci_hi, pwelch_f ] =  getPWELCH_ci(TsubRes, group)
+        
+        x = double( cell2mat( TsubRes.IEDpwelch(  TsubRes.Role ==  group  )  ) );
+        if ~isempty(x)
+            idxTrue = find(TsubRes.Role ==  group);
+            pwelch_f  = TsubRes.IEDfwelch{  idxTrue(1)   }; % get freq vector from somewhere
+            
+            % mean
+            pwelch_mean = nanmean(x,1); 
+                       
+            % ci normal - parametric   for <30 samples
+%             p_alpha = 0.05;
+%             nsamples = x;
+%             nsamples(~isnan(nsamples))=1; nsamples(isnan(nsamples))=0  ;
+%             nsamples = sum(nsamples,1);
+%             df = nsamples     -1;  % number of samples minus one
+%             pwelch_ci_lo = pwelch_mean - nansem(x).*tinv(1-p_alpha/2,df); 
+%             pwelch_ci_hi = pwelch_mean + nansem(x).*tinv(1-p_alpha/2,df);
 
-    function [pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems)
-        pwelch_conf_n = pwelch_mean - pwelch_sems*1.96;
-        pwelch_conf_p = pwelch_mean + pwelch_sems*1.96;
-        pwelch_conf_n(pwelch_conf_n<0)=0+eps;
-        pwelch_conf_p(pwelch_conf_p<0)=0+eps;
+            % ci non parametric for median - exact method - very small sample size
+            Nf = size(pwelch_f,2);
+            probs = zeros(1,Nf); pwelch_ci_hi = zeros(1,Nf); pwelch_ci_lo = zeros(1,Nf);
+            for i =1:Nf
+                xcol = x(:,i);
+                x_notnans = xcol(~isnan( xcol )); 
+               
+                res = quantci(x = x_notnans, pquant = 0.5, prob = 90);
+                probs(i) = res.probability;
+                pwelch_ci_lo(i) =  res.ci(1);
+                pwelch_ci_hi(i) =  res.ci(2);
+                pwelch_mean(i) = res.quantile;
+            end
+            disp(['Minimum CI probability for group: ' group ' was: '  num2str(  min(probs) ) '.']);
+            %hold on; scatter( pwelch_f+1 , x );
+
+            pwelch_ci_lo(pwelch_ci_lo<0)=0+eps;  % plotting reasons
+            pwelch_ci_hi(pwelch_ci_hi<0)=0+eps;
+
+        end
+    
+    end
+
+end
+
+function  plot_pwelch_means_Cx_vs_Treat_ZOOM(TsubRes)
+hax = gca;
+
+group = 'TREAT';
+[pwelch_mean ,  pwelch_ci_lo, pwelch_ci_hi, pwelch_f] = getPWELCH_ci(TsubRes, group);
+hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ); hold on;
+hs2 = confidenceshade( pwelch_f+1 , pwelch_ci_lo , pwelch_ci_hi , Color='r' ); 
+
+group = 'CTRL';
+[pwelch_mean , pwelch_ci_lo, pwelch_ci_hi , pwelch_f] = getPWELCH_ci(TsubRes, group);
+hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )   );  hold on;
+hs1 = confidenceshade( pwelch_f+1 , pwelch_ci_lo , pwelch_ci_hi , Color='k' );% for normal distribution CI
+
+hax = gca;
+%hax.XScale ="log";
+hax.YScale = "log";
+hax.Box ="on";
+
+hax.XLim = [50 700];
+hax.YLim = [10^-8 10^-5];
+
+xlabel(plt.labelfreqHz);
+
+
+% % ticks
+% hax.XTick =[80 100 300 500 700];
+ hax.YTick = [10^-8 10^-7 10^-6 10^-5];
+
+%ylabel(plt.labelpsd);
+%legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
+title('Avg.PSD, GR+FRs');
+%format_axes(hax);
+squareaxis(hax);
+    function [pwelch_mean ,  pwelch_ci_lo, pwelch_ci_hi, pwelch_f ] =  getPWELCH_ci(TsubRes, group)
+        
+        x = double( cell2mat( TsubRes.IEDpwelch(  TsubRes.Role ==  group  )  ) );
+        if ~isempty(x)
+            idxTrue = find(TsubRes.Role ==  group);
+            pwelch_f  = TsubRes.IEDfwelch{  idxTrue(1)   }; % get freq vector from somewhere
+            
+            % mean
+            pwelch_mean = nanmean(x,1); 
+                       
+            % ci normal - parametric   for <30 samples
+%             p_alpha = 0.05;
+%             nsamples = x;
+%             nsamples(~isnan(nsamples))=1; nsamples(isnan(nsamples))=0  ;
+%             nsamples = sum(nsamples,1);
+%             df = nsamples     -1;  % number of samples minus one
+%             pwelch_ci_lo = pwelch_mean - nansem(x).*tinv(1-p_alpha/2,df); 
+%             pwelch_ci_hi = pwelch_mean + nansem(x).*tinv(1-p_alpha/2,df);
+
+            % ci non parametric for median - exact method - very small sample size
+            Nf = size(pwelch_f,2);
+            probs = zeros(1,Nf); pwelch_ci_hi = zeros(1,Nf); pwelch_ci_lo = zeros(1,Nf);
+            for i =1:Nf
+                xcol = x(:,i);
+                x_notnans = xcol(~isnan( xcol )); 
+               
+                res = quantci(x = x_notnans, pquant = 0.5, prob = 90);
+                probs(i) = res.probability;
+                pwelch_ci_lo(i) =  res.ci(1);
+                pwelch_ci_hi(i) =  res.ci(2);
+                pwelch_mean(i) = res.quantile;
+            end
+            disp(['Minimum CI probability for group: ' group ' was: '  num2str(  min(probs) ) '.']);
+            %hold on; scatter( pwelch_f+1 , x );
+
+            pwelch_ci_lo(pwelch_ci_lo<0)=0+eps;  % plotting reasons
+            pwelch_ci_hi(pwelch_ci_hi<0)=0+eps;
+
+        end
+    
     end
 
 end
 
 
+% function [pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL] =  plot_pwelch_means_Cx_vs_Treat(TsubRes)
+% hax = gca;
+% 
+% group = 'TREAT';
+% [pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+% [pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
+% min_pw = min(pwelch_conf_n);
+% if min_pw<0, lift_pw = -min_pw; end;
+% 
+% hp2 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )  ); hold on;
+% hs2 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p , Color='r' ); % for normal distribution CI
+% hs2 = confidenceshade( pwelch_f+1 , pwelch_mean - pwelch_sems , pwelch_mean + pwelch_sems, Color='r' );
+% %for diff graph
+% pwelch_mean_TREAT = pwelch_mean;
+% pwelch_sems_TREAT = pwelch_sems;
+% 
+% group = 'CTRL';
+% [pwelch_mean , pwelch_sems, pwelch_f] = getPWELCHmeansems(TsubRes, group);
+% [pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems);
+% hp1 = plot(pwelch_f+1,pwelch_mean,'Color',plt.colors.( group  )   );  hold on;
+% hs1 = confidenceshade( pwelch_f+1 , pwelch_conf_n , pwelch_conf_p, Color='k' );% for normal distribution CI
+% set(gca, 'XScale', 'log', 'YScale','log');
+% %for diff graph
+% pwelch_mean_CTRL = pwelch_mean;
+% pwelch_sems_CTRL = pwelch_sems;
+% 
+% formatAsPSDplot();
+% 
+% ticks
+% hax.XTick =[1 10 100 1000];
+% hax.YTick = [10^-8 10^-6 10^-4 10^-2];
+% 
+% ylabel(plt.labelpsd);
+% legend([hp1 hp2],{'Control', 'FCD'},'Location','southwest');
+% title('Averaged PSD');
+% format_axes(hax);
+% squareaxis(hax);
+% 
+%     function [pwelch_conf_n,pwelch_conf_p] = pwelchmeansem2confs(pwelch_mean , pwelch_sems)
+%         pwelch_conf_n = pwelch_mean - pwelch_sems*1.96;
+%         pwelch_conf_p = pwelch_mean + pwelch_sems*1.96;
+%         pwelch_conf_n(pwelch_conf_n<0)=0+eps;
+%         pwelch_conf_p(pwelch_conf_p<0)=0+eps;
+%     end
+% 
+% end
 
-function plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL)
+
+
+%function plot_pwelch_diff(pwelch_f, pwelch_mean_TREAT,pwelch_sems_TREAT,pwelch_mean_CTRL,pwelch_sems_CTRL)
+function plot_pwelch_ratio(TsubRes)
+
+group = 'TREAT';
+[pwelch_mean_TREAT,pwelch_f] = getPWELCH_data(TsubRes, group);
+
+group = 'CTRL';
+[pwelch_mean_CTRL, pwelch_f ] = getPWELCH_data(TsubRes, group);
 
 pwelch_ratio_mean=(pwelch_mean_TREAT./pwelch_mean_CTRL);
-pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL).^2 );
+%pwelch_ratio_sem = pwelch_ratio_mean.*sqrt(  (pwelch_sems_TREAT./pwelch_mean_TREAT).^2 + (pwelch_sems_CTRL./pwelch_mean_CTRL).^2 );
 
 % https://en.wikipedia.org/wiki/Propagation_of_uncertainty
 % |A/B| * sqrt( (sA/A) ² + (sB/B)² )
 
-hp_d = plot(pwelch_f+1,pwelch_ratio_mean,'Color',plt.colors.( 'TREAT' )  );  hold on;
-% hp_d = plot(pwelch_f+1,pwelch_mean_diff,'Color',plt.colors.( group  )  ,'LineWidth', lw );  hold on;
-% hs_d= confidenceshade( pwelch_f+1 , abs( pwelch_mean_diff - pwelch_sems_diff ) , abs( pwelch_mean_diff + pwelch_sems_diff ), Color='k' );
-% hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem  ,  pwelch_ratio_mean + pwelch_ratio_sem , Color='k' );
-hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem*1.96  ,  pwelch_ratio_mean + pwelch_ratio_sem*1.96 , Color='k' ); % for normal distribution CI
+hp_d = plot(pwelch_f+1,pwelch_ratio_mean,'Color',plt.colors.( 'TREAT' )  );  hold on; % mean ratio line
+%hs_d= confidenceshade( pwelch_f+1 ,  pwelch_ratio_mean - pwelch_ratio_sem*1.96  ,  pwelch_ratio_mean + pwelch_ratio_sem*1.96 , Color='k' ); % for normal distribution CI
 
 hax = gca;
 %set(hax, 'XScale', 'log', 'YScale','log');
 set(gca,'XScale','log');
 %grid on
 % ylim([10^-9 10^-2]);
-ylim([0 8]);
+ylim([0 7]);
 xlim([1 2*10^3]);
 xlabel(plt.labelfreqHz);
 ylabel('FCD/Cx PSD ratio')
@@ -476,6 +638,18 @@ title('PSDs comparison');
 %format_axes(hax);
 squareaxis(hax);
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
+  function [pwelch_mean , pwelch_f ] =  getPWELCH_data(TsubRes, group)
+        
+        x = double( cell2mat( TsubRes.IEDpwelch(  TsubRes.Role ==  group  )  ) );
+        if ~isempty(x)
+            idxTrue = find(TsubRes.Role ==  group);
+            pwelch_f  = TsubRes.IEDfwelch{  idxTrue(1)   }; % get freq vector from somewhere
+            
+            % mean
+            pwelch_mean = nanmean(x,1); 
+        end
+  end
+
 end
 
 

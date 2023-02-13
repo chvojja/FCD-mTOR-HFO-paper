@@ -136,7 +136,7 @@ ha = hax(11);
 axes(ha); hold on;
 feature = 'RpeaksCount';
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == false, :);
-plotHistCount(Tplot ,feature);
+means_OUT = plotHistCount(Tplot ,feature);
 ylabel('Probability (%)');
 title('Time relationship - out');
 format_axes(ha);
@@ -145,17 +145,22 @@ format_post_histograms();
 
 ha = hax(12);
 axes(ha); hold on;
+%%
 feature = 'RpeaksCount';
 Tplot = TsubRes_inout(TsubRes_inout.Role == 'TREAT' & TsubRes_inout.InLesion == true, :);
-plotHistCount(Tplot ,feature);
+means_IN = plotHistCount(Tplot ,feature);
+%%
 % ylabel('Probability (%)');
 title('Time relationship - in');
 format_axes(ha);
 squareaxis(ha);
 format_post_histograms();
 
+
+
 %%
 if plt.savefigs_b
 savefig( a.pwd([mfilename '.fig']) );
+exportgraphics(gcf, a.pwd([mfilename '.pdf'])  ,'ContentType','vector');
 printpaper(  a.pwd([mfilename '.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 end

@@ -35,7 +35,7 @@ feature = 'rateFR_min';
 ylabel(plt.labelrateMin);
 %set(gca,'YLim', plt.YLimRippleRate );
 %ylimfromzero();
-ha.YLim=[ha.YLim(1) 0.4];
+ha.YLim=[ha.YLim(1) 1.56];
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 title('Fast ripple rate'); % title
 format_axes(ha);
@@ -46,8 +46,9 @@ ha = hax(2);
 axes(ha); hold on;
 feature = 'rateFR_min';
 [h] = plotBox_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+a.set_yprops(ha,feature); 
 %ylabel(plt.labelrateMin);
-%set(gca,'YLim', plt.YLimRippleRate );
+%set(gca,'YLim', a.YLimFRippleRate );
 %ylimfromzero();
 ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 title('Fast ripple rate'); % title
@@ -58,6 +59,7 @@ ha = hax(3);
 axes(ha); hold on;
 feature = 'rateFR_min';
 [h] = plotDot_OutvsIn(TsubRes_inout,feature,Tplt_OutVsIn);
+a.set_yprops(ha,feature); 
 %ylabel(plt.labelrateMin);
 %set(gca,'YLim', plt.YLimRippleRate);
 %ylimfromzero();
@@ -73,9 +75,10 @@ feature = 'FRfreq';
 [hs,hb] = plotDotBoxplot_CXvsTREAT(TsubRes,feature,Tplt_CtrlVsTreat);
 ylabel(plt.labelfreqHz);
 % set(gca,'YLim',  plt.YLimRippleFreq  );
-a.set_yprops(ha,'fripplefreq'); 
+a.set_yprops(ha,'fripplefreqSpecial'); 
 title('Fast ripple frequency'); % title
 format_axes(ha);
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 squareaxis(ha);
 
 ha = hax(5);
@@ -118,6 +121,7 @@ ylabel('GR/IED ratio (%)');
 a.set_yprops(ha,'fripple2IEDshare'); 
 title('Fast ripple/IED ratio');
 format_axes(ha);
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 squareaxis(ha);
 
 ha = hax(9);
@@ -129,6 +133,7 @@ feature = 'FRtoIEDrateShare';
 a.set_yprops(ha,'fripple2IEDshare'); 
 title('Fast ripple/IED ratio');
 format_axes(ha);
+ylimoptimal(PercentMargin = plt.OptimAxLimOffsetPercentage);
 squareaxis(ha);
 
 % R plot histogram of oscillations
@@ -157,5 +162,6 @@ format_post_histograms();
 %%
 if plt.savefigs_b
 savefig( a.pwd([mfilename '.fig']) );
+exportgraphics(gcf, a.pwd([mfilename '.pdf'])  ,'ContentType','vector');
 printpaper(  a.pwd([mfilename '.' plt.formatExt])   , dpi = plt.dpi, close = plt.closeFigs);
 end

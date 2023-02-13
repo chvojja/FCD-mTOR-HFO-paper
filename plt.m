@@ -6,9 +6,11 @@ classdef plt
         FontSize = 7;
         FontSizeAnnotate = 6;
 
-        LineWidthThin = 0.5;
-        LineWidthThicker = 0.8;
+%         LineWidthThin = 0.5;
+%         LineWidthThicker = 0.8;
 
+        LineWidthThin = 0.4; % beware, this is overrriden by format_axes() !!!
+        LineWidthThicker = 1.15;
 
         colors = struct('CTRL',[0 0 0], 'TREAT', [1 0 0] );
         kolecko = struct('CLOUD', 20 , 'SUBJECTS', 50 );
@@ -29,6 +31,17 @@ classdef plt
         %hfodetector_param = 'default';
         hfodetector_param = 'default_new_moreDetections';
 
+% magnitude = gaussmagbp([40 50 200 250],5000);  % puvodni
+% filteringfun_R = @(x,x1)filterfft2(x,magnitude);
+
+% magnitude = gaussmagbp([30 40 250 300],5000);  % more detections
+% filteringfun_R = @(x,x1)filterfft2(x,magnitude);
+
+% more detections
+filteringfun_R = @(x,x1)filterfft2(x, gaussmagbp([35 45 250 300],5000) );
+
+filteringfun_FR = @(x,x1)filterfft2(x, gaussmagbp([250 300 800 900],5000) );
+
         YLimRippleRate = [ 0  0.4];
         YLimRippleFreq  = [40 140];
 
@@ -44,10 +57,13 @@ classdef plt
 
         w_square_boxplot = 2.36;
 
-        dpi = 1000;
-        formatExt = 'png';
+        dpi = 600;
+        %formatExt = 'png';
+        formatExt = 'pdf';
         closeFigs = true;
         savefigs_b = true;
+%         closeFigs = false;
+%         savefigs_b = false;
 
         barsMeanFun = @nanmedian;
 
@@ -62,9 +78,9 @@ classdef plt
 % % 
         % Signal shits
         fs = 5000;
-        bpR = designfilt('bandpassfir','StopbandFrequency1',60,'PassbandFrequency1',100,'PassbandFrequency2',300,'StopbandFrequency2',350,'StopbandAttenuation1',40,'PassbandRipple',0.0001,'StopbandAttenuation2',40,'SampleRate',5000);
-        bpFR = designfilt('bandpassfir','StopbandFrequency1',250,'PassbandFrequency1',300,'PassbandFrequency2',1000,'StopbandFrequency2',1050,'StopbandAttenuation1',40,'PassbandRipple',0.0001,'StopbandAttenuation2',40,'SampleRate',5000);
-        %
+%         bpR = designfilt('bandpassfir','StopbandFrequency1',60,'PassbandFrequency1',100,'PassbandFrequency2',300,'StopbandFrequency2',350,'StopbandAttenuation1',40,'PassbandRipple',0.0001,'StopbandAttenuation2',40,'SampleRate',5000);
+%         bpFR = designfilt('bandpassfir','StopbandFrequency1',250,'PassbandFrequency1',300,'PassbandFrequency2',1000,'StopbandFrequency2',1050,'StopbandAttenuation1',40,'PassbandRipple',0.0001,'StopbandAttenuation2',40,'SampleRate',5000);
+%         %
     end
 
 
@@ -73,10 +89,15 @@ classdef plt
 %     
     methods (Static)
 
+
+
         function formatSpecial1()
             ax = gca;
             ax.Position(3)=ax.Position(3)-0.009;
         end
+
+
+
 
 %         function computeFreqStats(frqs,feature)
 % 

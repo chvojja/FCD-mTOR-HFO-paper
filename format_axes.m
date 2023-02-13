@@ -6,7 +6,7 @@ hax.FontSize = plt.FontSize; % premeks favourite
 hax.LabelFontSizeMultiplier = 1; % prevent font size from changing
 
 % Line width
-setall('LineWidth',0.4);
+setall(hax,'LineWidth',0.4);
 
 % Title format
 hax.Title.FontSize=plt.FontSize;
