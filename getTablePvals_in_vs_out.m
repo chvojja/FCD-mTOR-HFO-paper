@@ -31,6 +31,7 @@ for i = 1:Nf
                 
         end
         Tplt_OutVsIn{ feature , 'p' } = p;
+
     else
         disp(['skipping ' feature ' because the table does contain the column']);
     end
@@ -56,13 +57,13 @@ function Tplt_OutVsIn = updateT2(Tplt_OutVsIn,TsubRes_inout,feature, lesionPos)
         mmed = nanmedian(data);
         m = nanmean( data );
         s = nansem( data );
-        txt_ms = printmeansem(  m  , s );
+        %txt_ms = printmeansem(  m  , s );
         %txt_mmeds = printmeansem(  mmed  , s );
     
         Tplt_OutVsIn{ feature , [ lesionPos '_median' ]} = mmed;
         Tplt_OutVsIn{ feature , [ lesionPos '_mean' ]} = m;
         Tplt_OutVsIn{ feature , [ lesionPos '_sem' ]} = s;
-        Tplt_OutVsIn( feature , [ lesionPos '_asText' ] ) = { txt_ms };
+        %Tplt_OutVsIn( feature , [ lesionPos '_asText' ] ) = { txt_ms };
         Tplt_OutVsIn( feature , [ lesionPos '_data' ] ) = {data};
         Tplt_OutVsIn( feature , [ lesionPos '_asTextPaper' ] ) = { printmeansemmedian_HFOpaper(data) }; % mean +- sem (median) zaokrouhleno
 

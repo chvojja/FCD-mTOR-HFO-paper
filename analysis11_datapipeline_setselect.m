@@ -9,6 +9,6 @@ fs = 5000;
 %rmpath('full'); addpath('testing');
 
 rmpath('testing','full','full_strict','full_dontmiss','full_hfoloose');
-addpath('full_dontmiss');
+addpath('full_dontmiss'); % dontmiss is the final one!!!!
 %addpath('full_hfoloose');
 %addpath('full');

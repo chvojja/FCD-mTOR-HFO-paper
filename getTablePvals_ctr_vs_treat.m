@@ -33,13 +33,13 @@ function Tplt_CtrlVsTreat = updateT(Tplt_CtrlVsTreat,TsubRes,feature, role)
         mmed = nanmedian(data);
         m = nanmean( data );
         s = nansem( data );
-        txt_ms = printmeansem(  m  , s );
+        
         %txt_mmeds = printmeansem(  mmed  , s );
     
         Tplt_CtrlVsTreat{ feature , [ role '_median' ]} = mmed;
         Tplt_CtrlVsTreat{ feature , [ role '_mean' ]} = m;
         Tplt_CtrlVsTreat{ feature , [ role '_sem' ]} = s;
-        Tplt_CtrlVsTreat( feature , [ role '_asText' ] ) = { txt_ms };
+        %Tplt_CtrlVsTreat( feature , [ role '_asText' ] ) = { txt_ms };
         Tplt_CtrlVsTreat( feature , [ role '_data' ] ) = {data};
         Tplt_CtrlVsTreat( feature , [ role '_asTextPaper' ] ) = { printmeansemmedian_HFOpaper(data) }; % mean +- sem (median) zaokrouhleno
 end

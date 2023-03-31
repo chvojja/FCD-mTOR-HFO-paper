@@ -1,5 +1,8 @@
 
 %%
+Tsub=TsubRes;
+load(a.pwd('VKJeeg.mat')); 
+
 warning off;
 
 %% Per subject results
@@ -48,6 +51,7 @@ save7fp = a.pwd('TsubRes.mat'); save7
 
 save7fp = a.pwd('TsubRes_inout.mat'); save7
 
+%%
 % Compute features
 featuresC = {'IEDskew','IEDampl_mV','IEDwidth_msec','IEDmed','Rfreq','FRfreq','Rlength_ms','FRlength_ms',...
              'Rpwr','FRpwr','RinIEDs','FRinRFRs','RtoIEDrateShare', 'FRtoIEDrateShare', 'rateIED_min','rateR_min','rateFR_min','HFOsInIEDs_percent','NRs','NFRs'};
@@ -73,15 +77,26 @@ writetable( Tplt_CtrlVsTreat(:,setdiff(Tplt_CtrlVsTreat.Properties.VariableNames
 writetable( Tplt_OutVsIn(:,setdiff(Tplt_OutVsIn.Properties.VariableNames,{'In_data','Out_data'}))    , a.pwd('Tplt_OutVsIn.xlsx') );
 
 
-%% Compute all dataset features
+% Compute all dataset features
 
 timePerMouse = splitapply(@sum,VKJeeg.DurationMin,findgroups(VKJeeg.Subject));
 TsubRes.TimeRawMinsExact=timePerMouse;
+timePerMouse_TREAT = timePerMouse(1:8);
+timePerMouse_CTRL = timePerMouse([9 10 11 12]);
+stats.timePerMouse_TREAT_asTextPaper = printmeansemmedian_HFOpaper(timePerMouse_TREAT);
+stats.timePerMouse_CTRL_asTextPaper = printmeansemmedian_HFOpaper(timePerMouse_CTRL);
+stats.timePerMouse_p = ranksum( timePerMouse_TREAT , timePerMouse_CTRL ) ;  %s
 
-TsubRes.SkullFluoro_mm2 = Tlesions.SkullFluoro_mm2;
-
-stats.fluoro_medianstd_mm2 =  printmeansem(  nanmedian( TsubRes.SkullFluoro_mm2 )  , nansem( TsubRes.SkullFluoro_mm2 ) );
+% TsubRes.SkullFluoro_mm2 = Tlesions.SkullFluoro_mm2;
+% stats.fluoro_medianstd_mm2 =  printmeansem_HFOpaper(  nanmedian( TsubRes.SkullFluoro_mm2 )  , nansem( TsubRes.SkullFluoro_mm2 ) );
 stats.fluoro_in_contra = 2;
+
+volumes_TREAT = Tlesions.FluoroVolume(1:8);
+volumes_CTRL = Tlesions.FluoroVolume([9 10 11 12]);
+stats.fluoro_volume_TREAT_asTextPaper = printmeansemmedian_HFOpaper(volumes_TREAT);
+stats.fluoro_volume_CTRL_asTextPaper = printmeansemmedian_HFOpaper(volumes_CTRL);
+stats.fluoro_volume_p = ranksum( volumes_TREAT , volumes_CTRL ) ;  %s
+
 stats.Nanimals_TREAT = numel(find(TsubRes.Role == 'TREAT'));
 stats.Nanimals_CTRL = numel(find(TsubRes.Role == 'CTRL'));
 stats.Nanimals_TREAT_withIEDs = numel(find(TsubRes.Nieds>0 & TsubRes.Role == 'TREAT'));
@@ -96,6 +111,10 @@ treat_logi = TsubRes.Role == 'TREAT';
 stats.overall_IEDs_Nevents  = numel(find((Tiedf.Role == 'TREAT' & Tiedf.LabelName == a.IEDlabelName) ));
 
 stats.totalHFOevents_seizing_and_nonseizing =  sum(TsubRes.NHFOs(TsubRes.Role == "TREAT"));
+stats.totalHFOevents_TREAT_FRs =  sum(TsubRes.NFRs(TsubRes.Role == "TREAT"));
+stats.totalHFOevents_CTRL_FRs =  sum(TsubRes.NFRs(TsubRes.Role == "CTRL"));
+stats.totalHFOevents_TREAT_Rs =  sum(TsubRes.NRs(TsubRes.Role == "TREAT"));
+stats.totalHFOevents_CTRL_Rs =  sum(TsubRes.NRs(TsubRes.Role == "CTRL"));
 
 % alternative way of computing but too compicated
 %stats.overall_percentIEDdetectionsAssociatedHFOInControls  = 100*  numel(find(   (Tiedf.Role == 'CTRL' & Tiedf.LabelName == a.IEDlabelName) & (Tiedf.HasR | Tiedf.HasFR)    ))    /     numel(find(   (Tiedf.Role == 'CTRL' & Tiedf.LabelName == a.IEDlabelName)     ));
@@ -211,15 +230,15 @@ frqs = Tiedf{Tiedf.Role=='TREAT' & ~isnan(Tiedf.(feature)),feature};
 [mus,sems] = multimodalstats(frqs,2,'sem');
 stats.([feature '_multimodals_mu']) = mus;
 stats.([feature '_multimodals_sems']) = sems;
-stats.([feature '_multimodals_AsText_1']) = printmeansem(mus(1),sems(1));
-stats.([feature '_multimodals_AsText_2']) = printmeansem(mus(2),sems(2));
+stats.([feature '_multimodals_AsText_1']) = printmeansem_HFOpaper(mus(1),sems(1));
+stats.([feature '_multimodals_AsText_2']) = printmeansem_HFOpaper(mus(2),sems(2));
 
 feature = 'FRfreq';
 frqs = Tiedf{Tiedf.Role=='TREAT' & ~isnan(Tiedf.(feature)),feature};
 [mus,sems] = multimodalstats(frqs,2,'sem');
 stats.([feature '_multimodals_mu']) = mus;
 stats.([feature '_multimodals_sems']) = sems;    
-stats.([feature '_multimodals_AsText_1']) = printmeansem(mus(2),sems(2));
+stats.([feature '_multimodals_AsText_1']) = printmeansem_HFOpaper(mus(2),sems(2));
 
 
 %% Peak positions and distrubutions
